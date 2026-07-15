@@ -31,29 +31,29 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bg">
-      <form onSubmit={handleSubmit} className="card p-8 w-full max-w-sm space-y-4">
-        <h1 className="text-xl font-semibold text-center mb-2">ForgePanel</h1>
+    <div className="min-h-screen flex items-center justify-center bg-canvas">
+      <form onSubmit={handleSubmit} className="card p-6 w-full max-w-sm space-y-4">
+        <h1 className="text-section-head text-text-primary text-center mb-2">ForgePanel</h1>
 
         {!needs2fa ? (
           <>
             <div>
-              <label className="block text-sm text-text-secondary mb-1">Username</label>
-              <input className="input w-full" value={username} onChange={(e) => setUsername(e.target.value)} autoFocus />
+              <label className="field-label">Username</label>
+              <input className="input" value={username} onChange={(e) => setUsername(e.target.value)} autoFocus autoComplete="username" />
             </div>
             <div>
-              <label className="block text-sm text-text-secondary mb-1">Password</label>
-              <input type="password" className="input w-full" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <label className="field-label">Password</label>
+              <input type="password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
             </div>
           </>
         ) : (
           <div>
-            <label className="block text-sm text-text-secondary mb-1">2FA Code</label>
-            <input className="input w-full" value={totpToken} onChange={(e) => setTotpToken(e.target.value)} autoFocus maxLength={6} />
+            <label className="field-label">2FA Code</label>
+            <input className="input" value={totpToken} onChange={(e) => setTotpToken(e.target.value)} autoFocus maxLength={6} autoComplete="one-time-code" />
           </div>
         )}
 
-        {error && <p className="text-stopped text-sm">{error}</p>}
+        {error && <p className="text-stopped text-caption">{error}</p>}
 
         <button type="submit" disabled={loading} className="btn btn-primary w-full">
           {loading ? 'Signing in...' : needs2fa ? 'Verify' : 'Sign in'}

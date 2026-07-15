@@ -1,0 +1,46 @@
+:root {
+  /* Surfaces */
+  --canvas: #08090a;
+  --surface-1: #0f1011;
+  --surface-2: #141516;
+  --surface-3: #18191a;
+
+  /* Borders */
+  --border-hairline: #23252a;
+  --border-hairline-strong: #34343a;
+
+  /* Text */
+  --text-primary: #f7f8f8;
+  --text-secondary: #8a8f98;
+  --text-muted: #62666d;
+
+  /* Accent */
+  --accent: #5e6ad2;
+  --accent-hover: #6b7ae8;
+  --focus-ring: rgba(94, 106, 210, 0.5);
+
+  /* Status */
+  --status-running: #27a644;
+  --status-stopped: #eb5757;
+  --status-warning: #f59e0b;
+  --status-info: #02b8cc;
+
+  /* Spacing (8px grid) */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 24px;
+  --space-xl: 48px;
+
+  /* Radius */
+  --radius-button: 6px;
+  --radius-card: 12px;
+  --radius-input: 6px;
+  --radius-badge: 9999px;
+  --radius-modal: 12px;
+  --radius-tab: 6px;
+
+  /* Fonts */
+  --font-sans: 'Inter Variable', 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}

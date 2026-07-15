@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useParams, NavLink, Routes, Route, Navigate } from 'react-router-dom';
+import { useParams, useNavigate, NavLink, Routes, Route, Navigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { getSocket } from '../lib/socket';
+import { useToast } from '../lib/ToastContext';
 import StatusBadge from '../components/StatusBadge';
+import ConfirmModal from '../components/ConfirmModal';
 import Overview from './server-tabs/Overview';
 import Console from './server-tabs/Console';
 import Files from './server-tabs/Files';
@@ -29,12 +31,15 @@ const TABS = [
 
 export default function ServerDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [server, setServer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionBusy, setActionBusy] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const toast = useToast();
 
   function refresh() {
-    return api.get(`/servers/${id}`).then(setServer);
+    return api.get(`/servers/${id}`).then(setServer).catch((err) => toast.error(err.message));
   }
 
   useEffect(() => {
@@ -53,20 +58,31 @@ export default function ServerDetail() {
     try {
       await api.post(`/servers/${id}/${action}`);
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     } finally {
       setActionBusy(false);
     }
   }
 
-  if (loading) return <div className="p-6 text-text-secondary">Loading...</div>;
-  if (!server) return <div className="p-6 text-text-secondary">Server not found.</div>;
+  async function confirmDelete() {
+    try {
+      await api.del(`/servers/${id}`);
+      toast.success(`"${server.name}" deleted`);
+      navigate('/dashboard');
+    } catch (err) {
+      toast.error(err.message);
+      setDeleteOpen(false);
+    }
+  }
+
+  if (loading) return <div className="p-lg text-text-secondary text-[13px]">Loading...</div>;
+  if (!server) return <div className="p-lg text-text-secondary text-[13px]">Server not found.</div>;
 
   return (
     <div className="flex flex-col h-screen">
-      <div className="border-b border-border px-6 py-4 flex items-center justify-between">
+      <div className="border-b border-hairline px-6 h-[52px] flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-3">
-          <h1 className="text-lg font-semibold">{server.name}</h1>
+          <h1 className="text-[15px] text-text-primary" style={{ fontWeight: 590 }}>{server.name}</h1>
           <StatusBadge state={server.state} />
         </div>
         <div className="flex gap-2">
@@ -91,20 +107,22 @@ export default function ServerDetail() {
           >
             Stop
           </button>
+          <button className="btn btn-ghost text-stopped" onClick={() => setDeleteOpen(true)}>Delete</button>
         </div>
       </div>
 
-      <div className="border-b border-border px-6 flex gap-1 overflow-x-auto">
+      <div className="border-b border-hairline px-6 flex gap-1 overflow-x-auto flex-shrink-0">
         {TABS.map((tab) => (
           <NavLink
             key={tab.path}
             to={tab.path === '' ? `/servers/${id}` : `/servers/${id}/${tab.path}`}
             end={tab.path === ''}
             className={({ isActive }) =>
-              `px-3 py-2.5 text-sm font-medium border-b-2 whitespace-nowrap ${
-                isActive ? 'border-info text-text-primary' : 'border-transparent text-text-secondary hover:text-text-primary'
+              `px-3.5 py-2.5 text-[13px] border-b-2 whitespace-nowrap transition-colors duration-100 ${
+                isActive ? 'border-accent text-text-primary' : 'border-transparent text-text-muted hover:text-text-secondary'
               }`
             }
+            style={({ isActive }) => (isActive ? { fontWeight: 590 } : undefined)}
           >
             {tab.label}
           </NavLink>
@@ -123,6 +141,16 @@ export default function ServerDetail() {
           <Route path="*" element={<Navigate to={`/servers/${id}`} replace />} />
         </Routes>
       </div>
+
+      {deleteOpen && (
+        <ConfirmModal
+          title="Delete server?"
+          message={`This removes the "${server.name}" container. Server data on disk is kept. This cannot be undone from the panel.`}
+          confirmLabel="Delete"
+          onConfirm={confirmDelete}
+          onCancel={() => setDeleteOpen(false)}
+        />
+      )}
     </div>
   );
 }

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
+import { useToast } from '../../lib/ToastContext';
+import ConfirmModal from '../../components/ConfirmModal';
 
 const TYPES = ['restart', 'backup', 'command', 'update_check'];
 
@@ -10,85 +12,114 @@ export default function Tasks({ server }) {
   const [type, setType] = useState('restart');
   const [cronExpression, setCronExpression] = useState('0 4 * * *');
   const [command, setCommand] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const toast = useToast();
 
   function load() {
-    api.get(`/servers/${server.id}/tasks`).then(setTasks);
+    api.get(`/servers/${server.id}/tasks`).then(setTasks).catch((err) => toast.error(err.message));
   }
 
   useEffect(() => { load(); }, [server.id]);
 
   async function createTask() {
-    await api.post(`/servers/${server.id}/tasks`, {
-      name,
-      type,
-      cronExpression,
-      payload: type === 'command' ? { command } : undefined
-    });
-    setShowForm(false);
-    setName('');
-    load();
+    try {
+      await api.post(`/servers/${server.id}/tasks`, {
+        name,
+        type,
+        cronExpression,
+        payload: type === 'command' ? { command } : undefined
+      });
+      setShowForm(false);
+      setName('');
+      toast.success('Task created');
+      load();
+    } catch (err) {
+      toast.error(err.message);
+    }
   }
 
   async function toggleEnabled(task) {
-    await api.put(`/servers/${server.id}/tasks/${task.id}`, { enabled: !task.enabled });
-    load();
+    try {
+      await api.put(`/servers/${server.id}/tasks/${task.id}`, { enabled: !task.enabled });
+      load();
+    } catch (err) {
+      toast.error(err.message);
+    }
   }
 
-  async function remove(taskId) {
-    if (!confirm('Delete this scheduled task?')) return;
-    await api.del(`/servers/${server.id}/tasks/${taskId}`);
-    load();
+  async function confirmDelete() {
+    try {
+      await api.del(`/servers/${server.id}/tasks/${deleteTarget.id}`);
+      load();
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setDeleteTarget(null);
+    }
   }
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-lg space-y-lg">
       <div className="flex justify-between items-center">
-        <h2 className="font-medium">Scheduled Tasks</h2>
-        <button className="btn btn-primary" onClick={() => setShowForm((v) => !v)}>+ New Task</button>
+        <h2 className="text-section-head text-text-primary">Scheduled Tasks</h2>
+        {!showForm && <button className="btn btn-primary" onClick={() => setShowForm(true)}>+ New Task</button>}
       </div>
 
       {showForm && (
         <div className="card p-4 space-y-3">
-          <input className="input w-full" placeholder="Task name" value={name} onChange={(e) => setName(e.target.value)} />
-          <select className="input w-full" value={type} onChange={(e) => setType(e.target.value)}>
+          <input className="input" placeholder="Task name" value={name} onChange={(e) => setName(e.target.value)} />
+          <select className="input" value={type} onChange={(e) => setType(e.target.value)}>
             {TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
-          <input className="input w-full" placeholder="Cron expression (e.g. 0 4 * * *)" value={cronExpression} onChange={(e) => setCronExpression(e.target.value)} />
+          <input className="input" placeholder="Cron expression (e.g. 0 4 * * *)" value={cronExpression} onChange={(e) => setCronExpression(e.target.value)} />
           {type === 'command' && (
-            <input className="input w-full" placeholder="Command to send" value={command} onChange={(e) => setCommand(e.target.value)} />
+            <input className="input" placeholder="Command to send" value={command} onChange={(e) => setCommand(e.target.value)} />
           )}
-          <button className="btn btn-primary" onClick={createTask} disabled={!name}>Create</button>
+          <div className="flex gap-2">
+            <button className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancel</button>
+            <button className="btn btn-primary" onClick={createTask} disabled={!name}>Create</button>
+          </div>
         </div>
       )}
 
-      <div className="card">
-        <table className="w-full text-sm">
+      <div className="card overflow-hidden">
+        <table className="w-full text-[13px]">
           <thead>
-            <tr className="text-left text-text-secondary border-b border-border">
-              <th className="p-2">Name</th>
-              <th className="p-2">Type</th>
-              <th className="p-2">Schedule</th>
-              <th className="p-2">Last Run</th>
-              <th className="p-2"></th>
+            <tr className="text-left text-text-secondary border-b border-hairline">
+              <th className="p-3 font-normal">Name</th>
+              <th className="p-3 font-normal">Type</th>
+              <th className="p-3 font-normal">Schedule</th>
+              <th className="p-3 font-normal">Last Run</th>
+              <th className="p-3"></th>
             </tr>
           </thead>
           <tbody>
             {tasks.map((task) => (
-              <tr key={task.id} className="border-b border-border last:border-0">
-                <td className="p-2">{task.name}</td>
-                <td className="p-2 text-text-secondary">{task.type}</td>
-                <td className="p-2 text-text-secondary font-mono text-xs">{task.cron_expression}</td>
-                <td className="p-2 text-text-secondary">{task.last_run ? new Date(task.last_run).toLocaleString() : '—'}</td>
-                <td className="p-2 text-right space-x-2">
-                  <button className="text-info text-xs" onClick={() => toggleEnabled(task)}>{task.enabled ? 'Disable' : 'Enable'}</button>
-                  <button className="text-stopped text-xs" onClick={() => remove(task.id)}>Delete</button>
+              <tr key={task.id} className="border-b border-hairline last:border-0">
+                <td className="p-3 text-text-primary">{task.name}</td>
+                <td className="p-3 text-text-secondary">{task.type}</td>
+                <td className="p-3 text-text-secondary" style={{ fontFamily: 'var(--font-mono)' }}>{task.cron_expression}</td>
+                <td className="p-3 text-text-secondary">{task.last_run ? new Date(task.last_run).toLocaleString() : '—'}</td>
+                <td className="p-3 text-right space-x-3">
+                  <button className="text-accent text-label" onClick={() => toggleEnabled(task)}>{task.enabled ? 'Disable' : 'Enable'}</button>
+                  <button className="text-stopped text-label" onClick={() => setDeleteTarget(task)}>Delete</button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        {tasks.length === 0 && <p className="p-4 text-text-secondary text-sm">No scheduled tasks.</p>}
+        {tasks.length === 0 && <p className="p-6 text-center text-text-muted text-caption">No scheduled tasks.</p>}
       </div>
+
+      {deleteTarget && (
+        <ConfirmModal
+          title="Delete task?"
+          message={`This removes the scheduled task "${deleteTarget.name}".`}
+          confirmLabel="Delete"
+          onConfirm={confirmDelete}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      )}
     </div>
   );
 }

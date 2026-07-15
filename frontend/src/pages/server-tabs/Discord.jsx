@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../lib/api';
+import { useToast } from '../../lib/ToastContext';
 
 export default function Discord({ server, onServerUpdate }) {
   const [webhookUrl, setWebhookUrl] = useState(server.discord_webhook_url || '');
@@ -8,6 +9,7 @@ export default function Discord({ server, onServerUpdate }) {
   const [chatRelay, setChatRelay] = useState(!!server.discord_chat_relay);
   const [channels, setChannels] = useState([]);
   const [saving, setSaving] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     api.get('/discord/channels').then(setChannels).catch(() => setChannels([]));
@@ -21,38 +23,41 @@ export default function Discord({ server, onServerUpdate }) {
         discordBotChannelId: channelId,
         discordChatRelay: chatRelay
       });
+      toast.success('Discord settings saved');
       onServerUpdate();
+    } catch (err) {
+      toast.error(err.message);
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-lg space-y-lg">
       <div className="card p-4 space-y-4">
-        <h2 className="font-medium">Discord Integration</h2>
-        <p className="text-sm text-text-secondary">
-          Set up the bot itself in <Link to="/settings" className="text-info">Settings → Discord</Link>. Once it's connected, configure this server's notifications below.
+        <h2 className="card-title">Discord Integration</h2>
+        <p className="text-caption text-text-secondary -mt-2">
+          Set up the bot itself in <Link to="/settings" className="text-accent">Settings → Discord</Link>. Once it's connected, configure this server's notifications below.
         </p>
 
         <div>
-          <label className="block text-sm text-text-secondary mb-1">Webhook URL (for notifications)</label>
-          <input className="input w-full" value={webhookUrl} onChange={(e) => setWebhookUrl(e.target.value)} placeholder="https://discord.com/api/webhooks/..." />
+          <label className="field-label">Webhook URL (for notifications)</label>
+          <input className="input" autoComplete="off" value={webhookUrl} onChange={(e) => setWebhookUrl(e.target.value)} placeholder="https://discord.com/api/webhooks/..." />
         </div>
 
         <div>
-          <label className="block text-sm text-text-secondary mb-1">Bot Channel</label>
+          <label className="field-label">Bot Channel</label>
           {channels.length > 0 ? (
-            <select className="input w-full" value={channelId} onChange={(e) => setChannelId(e.target.value)}>
+            <select className="input" value={channelId} onChange={(e) => setChannelId(e.target.value)}>
               <option value="">None</option>
               {channels.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           ) : (
-            <input className="input w-full" value={channelId} onChange={(e) => setChannelId(e.target.value)} placeholder="Channel ID (bot not connected yet)" />
+            <input className="input" autoComplete="off" value={channelId} onChange={(e) => setChannelId(e.target.value)} placeholder="Channel ID (bot not connected yet)" />
           )}
         </div>
 
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex items-center gap-2 text-caption text-text-primary">
           <input type="checkbox" checked={chatRelay} onChange={(e) => setChatRelay(e.target.checked)} />
           Relay in-game chat to Discord and back
         </label>

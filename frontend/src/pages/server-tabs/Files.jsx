@@ -1,6 +1,7 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import Editor from '@monaco-editor/react';
 import { api, uploadFile } from '../../lib/api';
+import { useToast } from '../../lib/ToastContext';
 
 export default function Files({ server }) {
   const [path, setPath] = useState('');
@@ -10,36 +11,52 @@ export default function Files({ server }) {
   const [editorContent, setEditorContent] = useState('');
   const [uploadProgress, setUploadProgress] = useState(null);
   const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef(null);
+  const toast = useToast();
 
   const load = useCallback((p) => {
-    api.get(`/servers/${server.id}/files?path=${encodeURIComponent(p)}`).then((data) => {
-      setEntries(data.entries);
-      setSelected(new Set());
-    });
+    api.get(`/servers/${server.id}/files?path=${encodeURIComponent(p)}`)
+      .then((data) => {
+        setEntries(data.entries);
+        setSelected(new Set());
+      })
+      .catch((err) => toast.error(`Failed to load files: ${err.message}`));
   }, [server.id]);
 
   useEffect(() => { load(path); }, [path, load]);
 
   function openFile(name) {
     const filePath = path ? `${path}/${name}` : name;
-    api.get(`/servers/${server.id}/files/content?path=${encodeURIComponent(filePath)}`).then((data) => {
-      setEditing(filePath);
-      setEditorContent(data.content);
-    });
+    api.get(`/servers/${server.id}/files/content?path=${encodeURIComponent(filePath)}`)
+      .then((data) => {
+        setEditing(filePath);
+        setEditorContent(data.content);
+      })
+      .catch((err) => toast.error(err.message));
   }
 
   async function saveFile() {
-    await api.post(`/servers/${server.id}/files/content`, { path: editing, content: editorContent });
-    setEditing(null);
+    try {
+      await api.post(`/servers/${server.id}/files/content`, { path: editing, content: editorContent });
+      toast.success('File saved');
+      setEditing(null);
+    } catch (err) {
+      toast.error(err.message);
+    }
   }
 
   async function deleteSelected() {
-    if (!confirm(`Delete ${selected.size} item(s)?`)) return;
-    for (const name of selected) {
-      const filePath = path ? `${path}/${name}` : name;
-      await api.del(`/servers/${server.id}/files?path=${encodeURIComponent(filePath)}`);
+    if (!confirm(`Delete ${selected.size} item(s)? This cannot be undone.`)) return;
+    try {
+      for (const name of selected) {
+        const filePath = path ? `${path}/${name}` : name;
+        await api.del(`/servers/${server.id}/files?path=${encodeURIComponent(filePath)}`);
+      }
+      toast.success(`Deleted ${selected.size} item(s)`);
+      load(path);
+    } catch (err) {
+      toast.error(err.message);
     }
-    load(path);
   }
 
   function downloadEntry(name) {
@@ -48,54 +65,70 @@ export default function Files({ server }) {
   }
 
   async function handleFiles(fileList) {
-    for (const file of fileList) {
-      setUploadProgress(0);
-      await uploadFile(`/servers/${server.id}/files/upload?path=${encodeURIComponent(path)}`, file, setUploadProgress);
+    try {
+      for (const file of fileList) {
+        setUploadProgress(0);
+        await uploadFile(`/servers/${server.id}/files/upload?path=${encodeURIComponent(path)}`, file, setUploadProgress);
+      }
+      toast.success('Upload complete');
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setUploadProgress(null);
+      load(path);
     }
-    setUploadProgress(null);
-    load(path);
   }
 
   const breadcrumbs = path ? path.split('/') : [];
 
   return (
     <div
-      className="p-6"
+      className="p-lg"
       onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
       onDragLeave={() => setDragOver(false)}
       onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files); }}
     >
-      <div className="flex items-center gap-1 text-sm mb-4">
-        <button className="text-info" onClick={() => setPath('')}>root</button>
-        {breadcrumbs.map((seg, i) => (
-          <span key={i} className="flex items-center gap-1">
-            <span className="text-text-secondary">/</span>
-            <button className="text-info" onClick={() => setPath(breadcrumbs.slice(0, i + 1).join('/'))}>{seg}</button>
-          </span>
-        ))}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-1 text-[13px]">
+          <button className="text-accent" onClick={() => setPath('')}>root</button>
+          {breadcrumbs.map((seg, i) => (
+            <span key={i} className="flex items-center gap-1">
+              <span className="text-text-muted">/</span>
+              <button className="text-accent" onClick={() => setPath(breadcrumbs.slice(0, i + 1).join('/'))}>{seg}</button>
+            </span>
+          ))}
+        </div>
+        <div className="flex gap-2">
+          <input ref={fileInputRef} type="file" multiple className="hidden" onChange={(e) => handleFiles(e.target.files)} />
+          <button className="btn btn-primary" onClick={() => fileInputRef.current?.click()}>Upload</button>
+        </div>
       </div>
 
       {selected.size > 0 && (
-        <div className="mb-3">
-          <button className="btn btn-danger" onClick={deleteSelected}>Delete {selected.size} selected</button>
+        <div className="flex items-center justify-between bg-surface2 border border-hairline-strong rounded-card px-4 py-2 mb-3">
+          <span className="text-caption text-text-secondary">{selected.size} selected</span>
+          <div className="flex gap-2">
+            <button className="btn btn-ghost" onClick={() => setSelected(new Set())}>Clear</button>
+            <button className="btn btn-danger" onClick={deleteSelected}>Delete selected</button>
+          </div>
         </div>
       )}
 
-      <div className={`card ${dragOver ? 'border-info' : ''}`}>
-        <table className="w-full text-sm">
+      <div className={`card overflow-hidden ${dragOver ? 'border-accent' : ''}`}>
+        <table className="w-full text-[13px]">
           <thead>
-            <tr className="text-left text-text-secondary border-b border-border">
-              <th className="p-2 w-8"></th>
-              <th className="p-2">Name</th>
-              <th className="p-2">Size</th>
-              <th className="p-2">Modified</th>
-              <th className="p-2"></th>
+            <tr className="text-left text-text-secondary border-b border-hairline">
+              <th className="p-2.5 w-8"></th>
+              <th className="p-2.5 font-normal">Name</th>
+              <th className="p-2.5 font-normal">Size</th>
+              <th className="p-2.5 font-normal">Modified</th>
+              <th className="p-2.5"></th>
             </tr>
           </thead>
           <tbody>
             {entries.map((entry) => (
-              <tr key={entry.name} className="border-b border-border last:border-0 hover:bg-surface2">
-                <td className="p-2">
+              <tr key={entry.name} className="border-b border-hairline last:border-0 hover:bg-surface2">
+                <td className="p-2.5">
                   <input
                     type="checkbox"
                     checked={selected.has(entry.name)}
@@ -106,35 +139,38 @@ export default function Files({ server }) {
                     }}
                   />
                 </td>
-                <td className="p-2">
+                <td className="p-2.5">
                   {entry.isDirectory ? (
-                    <button className="text-info" onClick={() => setPath(path ? `${path}/${entry.name}` : entry.name)}>
-                      📁 {entry.name}
+                    <button className="text-accent" onClick={() => setPath(path ? `${path}/${entry.name}` : entry.name)}>
+                      {entry.name}/
                     </button>
                   ) : (
-                    <button onClick={() => openFile(entry.name)}>📄 {entry.name}</button>
+                    <button className="text-text-primary hover:text-accent" onClick={() => openFile(entry.name)}>{entry.name}</button>
                   )}
                 </td>
-                <td className="p-2 text-text-secondary">{entry.isDirectory ? '—' : `${Math.ceil(entry.sizeBytes / 1024)} KB`}</td>
-                <td className="p-2 text-text-secondary">{new Date(entry.modifiedAt).toLocaleString()}</td>
-                <td className="p-2 text-right">
-                  <button className="text-info text-xs" onClick={() => downloadEntry(entry.name)}>Download</button>
+                <td className="p-2.5 text-text-secondary">{entry.isDirectory ? '—' : `${Math.ceil(entry.sizeBytes / 1024)} KB`}</td>
+                <td className="p-2.5 text-text-secondary">{new Date(entry.modifiedAt).toLocaleString()}</td>
+                <td className="p-2.5 text-right">
+                  <button className="text-accent text-label" onClick={() => downloadEntry(entry.name)}>Download</button>
                 </td>
               </tr>
             ))}
+            {entries.length === 0 && (
+              <tr><td colSpan={5} className="p-6 text-center text-text-muted text-caption">This folder is empty.</td></tr>
+            )}
           </tbody>
         </table>
       </div>
 
       {uploadProgress !== null && (
-        <div className="mt-3 text-sm text-text-secondary">Uploading... {uploadProgress}%</div>
+        <div className="mt-3 text-caption text-text-secondary">Uploading... {uploadProgress}%</div>
       )}
 
       {editing && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="card w-full max-w-4xl h-[70vh] flex flex-col p-4">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-surface1 border border-hairline-strong rounded-modal w-full max-w-4xl h-[70vh] flex flex-col p-4">
             <div className="flex justify-between items-center mb-2">
-              <span className="font-mono text-sm">{editing}</span>
+              <span style={{ fontFamily: 'var(--font-mono)' }} className="text-caption text-text-primary">{editing}</span>
               <div className="flex gap-2">
                 <button className="btn btn-secondary" onClick={() => setEditing(null)}>Close</button>
                 <button className="btn btn-primary" onClick={saveFile}>Save</button>

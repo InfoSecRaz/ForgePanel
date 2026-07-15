@@ -1,4 +1,5 @@
 const Docker = require('dockerode');
+const { Readable } = require('stream');
 
 const docker = new Docker({ socketPath: process.env.DOCKER_SOCKET || '/var/run/docker.sock' });
 
@@ -45,16 +46,13 @@ async function createServerContainer({ serverId, gameId, image, envVars, portBin
     // process and the panel's own file manager/SFTP can read and write the same files.
     User: process.getuid ? `${process.getuid()}:${process.getgid()}` : undefined,
     Env: Object.entries(envVars || {}).map(([k, v]) => `${k}=${v}`),
-    // Required for sendCommand()/console input to actually reach the game process.
-    // Docker only wires up a container's stdin if it was requested at creation time —
-    // attaching with { stdin: true } later (which sendCommand does) silently connects
-    // to nothing if OpenStdin wasn't set here, so every stdin-based console command
-    // (save/kick/ban, and any template using stop.type === 'stdin', e.g. Zomboid's
-    // "quit") would be swallowed with no error and no effect on the running server.
+    ExposedPorts: exposedPorts,
+    // Without OpenStdin, Docker closes the container's stdin at creation time and any later
+    // `attach({stdin: true})` write goes nowhere — the game process never receives console
+    // commands (including stdin-based stop commands like PZ's "quit"). StdinOnce: false keeps
+    // it open across multiple attach/detach cycles instead of closing after the first one.
     OpenStdin: true,
     StdinOnce: false,
-    Tty: false,
-    ExposedPorts: exposedPorts,
     Labels: {
       forgepanel: 'true',
       'forgepanel.server_id': serverId,
@@ -140,17 +138,38 @@ async function streamLogs(containerId, onLine) {
 
   docker.modem.demuxStream(
     stream,
-    { write: (chunk) => onLine(chunk.toString('utf8')) },
-    { write: (chunk) => onLine(chunk.toString('utf8')) }
+    { write: (chunk) => onLine(chunk.toString('utf8'), 'stdout') },
+    { write: (chunk) => onLine(chunk.toString('utf8'), 'stderr') }
   );
 
   return stream;
 }
 
+async function getRecentLogs(containerId, tailLines = 200) {
+  const container = docker.getContainer(containerId);
+  const buffer = await container.logs({ follow: false, stdout: true, stderr: true, tail: tailLines, timestamps: false });
+
+  let text = '';
+  const source = Readable.from(buffer);
+  docker.modem.demuxStream(
+    source,
+    { write: (chunk) => { text += chunk.toString('utf8'); } },
+    { write: (chunk) => { text += chunk.toString('utf8'); } }
+  );
+  await new Promise((resolve) => source.on('end', resolve));
+
+  return text.split('\n').filter(Boolean);
+}
+
 async function sendCommand(containerId, command) {
   const container = docker.getContainer(containerId);
   const stream = await container.attach({ stream: true, stdin: true });
-  stream.write(`${command}\n`);
+  // dockerode's attach() stream doesn't reliably flush data passed directly to end(data) before
+  // tearing down the hijacked connection — write() then a separate end() does.
+  await new Promise((resolve, reject) => {
+    stream.write(`${command}\n`, (err) => (err ? reject(err) : resolve()));
+  });
+  stream.end();
 }
 
 module.exports = {
@@ -169,5 +188,6 @@ module.exports = {
   inspectContainer,
   getStats,
   streamLogs,
+  getRecentLogs,
   sendCommand
 };
