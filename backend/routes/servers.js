@@ -192,4 +192,22 @@ router.get('/:id/status', requireAuth, async (req, res) => {
   res.json({ state: row.state, container: containerState });
 });
 
+router.get('/:id/activity', requireAuth, (req, res) => {
+  const row = db.prepare('SELECT id FROM servers WHERE id = ?').get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Server not found' });
+
+  const limit = Math.min(Number(req.query.limit) || 50, 200);
+  const rows = db.prepare(
+    'SELECT id, event_type, description, metadata, occurred_at FROM activity_log WHERE server_id = ? ORDER BY occurred_at DESC, id DESC LIMIT ?'
+  ).all(req.params.id, limit);
+
+  res.json(rows.map((r) => ({
+    id: r.id,
+    eventType: r.event_type,
+    description: r.description,
+    metadata: r.metadata ? JSON.parse(r.metadata) : null,
+    occurredAt: r.occurred_at
+  })));
+});
+
 module.exports = router;

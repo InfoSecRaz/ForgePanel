@@ -16,7 +16,10 @@ function setState(serverId, state, io) {
 
 function checkReadyPattern(server, template, line, io) {
   if (server.state !== 'starting' || !template.readyPattern) return;
-  if (line.includes(template.readyPattern)) {
+  // Case-insensitive match: several game servers vary the casing of their ready-state
+  // log line between versions/builds, and a strict-case match would leave the panel
+  // stuck showing "starting" forever for an already-running server.
+  if (line.toLowerCase().includes(template.readyPattern.toLowerCase())) {
     setState(server.id, 'running', io);
     logActivity(server.id, 'server_started', 'Server reached ready state');
   }
@@ -72,7 +75,16 @@ function watchDockerEvents(io) {
           if (action === 'die') handleContainerDie(containerId, io);
           if (action === 'start') {
             const server = db.prepare('SELECT * FROM servers WHERE container_id = ?').get(containerId);
-            if (server && onContainerStart) onContainerStart(server.id);
+            if (server) {
+              // The restart flow (routes/servers.js POST /:id/restart) sets state to
+              // 'restarting' and leaves it there — it never re-enters 'starting'. Since
+              // checkReadyPattern() only evaluates log lines while state === 'starting',
+              // a restarted server's ready-state line would otherwise never be observed
+              // and the panel would show "restarting" forever. Treat the container's
+              // 'start' event as the moment a restart resumes booting.
+              if (server.state === 'restarting') setState(server.id, 'starting', io);
+              if (onContainerStart) onContainerStart(server.id);
+            }
           }
         } catch (err) {
           // Ignore malformed or partial event chunks.

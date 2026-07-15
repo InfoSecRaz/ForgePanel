@@ -6,7 +6,7 @@ const path = require('path');
 const { Server } = require('socket.io');
 
 const { sessionMiddleware, requireAuth } = require('./auth');
-const { attachIo } = require('./services/activityService');
+const { attachIo, logActivity } = require('./services/activityService');
 const { InstallService } = require('./services/installService');
 const dockerService = require('./services/dockerService');
 const playerService = require('./services/playerService');
@@ -109,6 +109,44 @@ async function ensureLogStream(serverId) {
 // detection even with no console viewers) and are cleaned up by the stream's own 'end' event
 // when the container stops, not by socket room membership.
 
+// If the backend process restarts (deploy, crash, manual `systemctl restart`) while a
+// container is already running, the docker 'start' event that would normally trigger
+// ensureLogStream() via stateWatcher.attachStartHandler() has already fired and is gone —
+// docker only emits it once, at the moment the container actually starts. Without this
+// reconciliation pass, any server that was mid-boot (state = 'starting') at the moment the
+// panel restarted would stay stuck in "starting" forever: nothing re-attaches its log
+// stream, so checkReadyPattern() never runs again and the ready-state line the game server
+// already printed (or is about to print) is never observed. Servers that had already
+// finished booting (state = 'running') have the same problem for player join/leave
+// tracking, which also depends on the log stream being attached.
+async function reconcileServerStates() {
+  const db = require('./db/db');
+  // 'restarting' is included alongside 'starting'/'running': if the panel restarts while
+  // a server is mid-restart, the same missed-'start'-event problem applies (see the
+  // 'restarting' handling in stateWatcher.watchDockerEvents for the live-process case).
+  const rows = db.prepare("SELECT * FROM servers WHERE state IN ('starting', 'running', 'restarting') AND container_id IS NOT NULL").all();
+
+  for (const row of rows) {
+    try {
+      const info = await dockerService.inspectContainer(row.container_id);
+      if (info.State && info.State.Running) {
+        if (row.state === 'restarting') stateWatcher.setState(row.id, 'starting', io);
+        await ensureLogStream(row.id);
+      } else {
+        // Container isn't actually running (e.g. it crashed or was stopped externally
+        // while the panel was down) — the DB state is stale, so correct it rather than
+        // leaving the UI showing "starting"/"running" for a dead container.
+        stateWatcher.setState(row.id, 'crashed', io);
+        logActivity(row.id, 'server_crashed', 'Server was not running on panel startup');
+      }
+    } catch (err) {
+      // inspectContainer throws if the container no longer exists at all.
+      stateWatcher.setState(row.id, 'crashed', io);
+      logActivity(row.id, 'server_crashed', 'Container missing on panel startup');
+    }
+  }
+}
+
 io.on('connection', (socket) => {
   const joinedServers = new Set();
 
@@ -145,6 +183,7 @@ async function start() {
 
   stateWatcher.attachStartHandler(ensureLogStream);
   stateWatcher.watchDockerEvents(io);
+  await reconcileServerStates();
   resourceService.startMonitoring(io);
   playitService.startTunnelPolling(io);
   schedulerService.loadAllTasks();

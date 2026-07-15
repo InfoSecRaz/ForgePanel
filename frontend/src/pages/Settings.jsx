@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
+import { useToast } from '../components/Toast';
 
 const SECTIONS = ['General', 'Steam', 'Docker', 'playit.gg', 'Discord', 'Forge Resources', 'License'];
 
@@ -149,6 +150,7 @@ export default function Settings() {
   const [section, setSection] = useState('General');
   const [settings, setSettings] = useState(null);
   const [host, setHost] = useState(null);
+  const { showToast } = useToast();
 
   function load() {
     api.get('/settings').then((data) => {
@@ -160,8 +162,14 @@ export default function Settings() {
   useEffect(() => { load(); }, []);
 
   async function handleSave(patch) {
-    await api.put('/settings', patch);
-    load();
+    try {
+      await api.put('/settings', patch);
+      load();
+      showToast('Settings saved', 'success');
+    } catch (err) {
+      showToast(err.message || 'Failed to save settings', 'error');
+      throw err;
+    }
   }
 
   if (!settings) return <div className="p-6 text-text-secondary">Loading...</div>;

@@ -8,6 +8,6 @@ backend/keys/
 dist/
 .DS_Store
 *.log
-forgepanel/backups/
-forgepanel/servers/
-forgepanel/steamcmd_cache/
+/backups/
+/servers/
+/steamcmd_cache/

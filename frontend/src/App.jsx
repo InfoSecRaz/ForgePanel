@@ -24,7 +24,7 @@ export default function App() {
         <Route path="/templates" element={<RequireAuth><Templates /></RequireAuth>} />
         <Route path="/users" element={<RequireAuth><Users /></RequireAuth>} />
         <Route path="/settings" element={<RequireAuth><Settings /></RequireAuth>} />
-        <Route path="/servers/:id" element={<RequireAuth><ServerDetail /></RequireAuth>} />
+        <Route path="/servers/:id/*" element={<RequireAuth><ServerDetail /></RequireAuth>} />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>

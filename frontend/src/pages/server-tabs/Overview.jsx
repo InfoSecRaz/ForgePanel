@@ -17,6 +17,7 @@ export default function Overview({ server }) {
 
   useEffect(() => {
     api.get(`/servers/${server.id}/players`).then((data) => setPlayers(data.online));
+    api.get(`/servers/${server.id}/activity`).then(setActivity).catch(() => {});
 
     const socket = getSocket();
     const onActivity = ({ serverId, event }) => {
@@ -55,15 +56,22 @@ export default function Overview({ server }) {
             ))}
           </div>
         </div>
-        <ResponsiveContainer width="100%" height={220}>
-          <LineChart data={points}>
-            <XAxis dataKey="recorded_at" tick={false} stroke="#2a2a2a" />
-            <YAxis stroke="#9ca3af" fontSize={12} />
-            <Tooltip contentStyle={{ background: '#1a1a1a', border: '1px solid #2a2a2a' }} />
-            <Line type="monotone" dataKey="cpu_percent" name="CPU %" stroke="#3b82f6" dot={false} />
-            <Line type="monotone" dataKey="ram_mb" name="RAM MB" stroke="#10b981" dot={false} />
-          </LineChart>
-        </ResponsiveContainer>
+        {points.length === 0 ? (
+          <div className="h-[220px] flex flex-col items-center justify-center text-text-secondary text-sm gap-1 border border-dashed border-border rounded-md">
+            <span>No resource data yet</span>
+            <span className="text-xs">Metrics appear here once the server has been running for a bit.</span>
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={points}>
+              <XAxis dataKey="recorded_at" tick={false} stroke="#2a2a2a" />
+              <YAxis stroke="#9ca3af" fontSize={12} />
+              <Tooltip contentStyle={{ background: '#1a1a1a', border: '1px solid #2a2a2a' }} />
+              <Line type="monotone" dataKey="cpu_percent" name="CPU %" stroke="#3b82f6" dot={false} />
+              <Line type="monotone" dataKey="ram_mb" name="RAM MB" stroke="#10b981" dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-6">
@@ -80,13 +88,17 @@ export default function Overview({ server }) {
 
         <div className="card p-4">
           <h2 className="font-medium mb-3">Activity</h2>
-          <ul className="space-y-2 text-sm max-h-64 overflow-y-auto">
-            {activity.map((e, i) => (
-              <li key={i} className="text-text-secondary">
-                <span className="text-text-primary">{e.eventType}</span> — {e.description}
-              </li>
-            ))}
-          </ul>
+          {activity.length === 0 ? (
+            <p className="text-text-secondary text-sm">No activity yet</p>
+          ) : (
+            <ul className="space-y-2 text-sm max-h-64 overflow-y-auto">
+              {activity.map((e, i) => (
+                <li key={e.id ?? i} className="text-text-secondary">
+                  <span className="text-text-primary">{e.eventType}</span> — {e.description}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
     </div>

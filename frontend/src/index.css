@@ -6,6 +6,11 @@ body {
   margin: 0;
 }
 
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: theme('colors.info');
+}
+
 .status-badge {
   @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium;
 }

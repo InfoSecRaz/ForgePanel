@@ -45,6 +45,15 @@ async function createServerContainer({ serverId, gameId, image, envVars, portBin
     // process and the panel's own file manager/SFTP can read and write the same files.
     User: process.getuid ? `${process.getuid()}:${process.getgid()}` : undefined,
     Env: Object.entries(envVars || {}).map(([k, v]) => `${k}=${v}`),
+    // Required for sendCommand()/console input to actually reach the game process.
+    // Docker only wires up a container's stdin if it was requested at creation time —
+    // attaching with { stdin: true } later (which sendCommand does) silently connects
+    // to nothing if OpenStdin wasn't set here, so every stdin-based console command
+    // (save/kick/ban, and any template using stop.type === 'stdin', e.g. Zomboid's
+    // "quit") would be swallowed with no error and no effect on the running server.
+    OpenStdin: true,
+    StdinOnce: false,
+    Tty: false,
     ExposedPorts: exposedPorts,
     Labels: {
       forgepanel: 'true',
