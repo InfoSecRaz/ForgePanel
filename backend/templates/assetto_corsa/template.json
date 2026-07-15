@@ -1,0 +1,27 @@
+{
+  "id": "assetto_corsa",
+  "name": "Assetto Corsa",
+  "category": "racing",
+  "appid": 302550,
+  "anon": false,
+  "ports": [
+    { "port": 9600, "protocol": "udp", "primary": true },
+    { "port": 8081, "protocol": "tcp" }
+  ],
+  "stop": { "type": "signal", "signal": "SIGTERM" },
+  "readyPattern": "Listening",
+  "config": { "type": "ini", "file": "server_cfg.ini" },
+  "workshopProvider": "none",
+  "installNotes": "Assetto Corsa requires a Steam account that owns the game. Set STEAM_USER and STEAM_PASS on the container.",
+  "defaultRamMb": 2048,
+  "fields": [
+    { "envVar": "SERVER_NAME", "label": "Server Name", "type": "text", "default": "ForgePanel Assetto Corsa Server", "iniKey": "NAME", "iniSection": "SERVER" },
+    { "envVar": "PASSWORD", "label": "Password", "type": "password", "default": "", "iniKey": "PASSWORD", "iniSection": "SERVER" },
+    { "envVar": "ADMIN_PASSWORD", "label": "Admin Password", "type": "password", "default": "", "iniKey": "ADMIN_PASSWORD", "iniSection": "SERVER" },
+    { "envVar": "MAX_CLIENTS", "label": "Max Clients", "type": "number", "default": 18, "iniKey": "MAX_CLIENTS", "iniSection": "SERVER" },
+    { "envVar": "TRACK", "label": "Track", "type": "text", "default": "monza", "iniKey": "TRACK", "iniSection": "SERVER" },
+    { "envVar": "CARS", "label": "Cars", "type": "text", "default": "bmw_z4", "iniKey": "CARS", "iniSection": "SERVER" },
+    { "envVar": "RACE_OVER_TIME", "label": "Race Over Time (s)", "type": "number", "default": 60, "iniKey": "RACE_OVER_TIME", "iniSection": "SERVER" },
+    { "envVar": "REVERSE_GRID_POSITIONS", "label": "Reverse Grid Positions", "type": "bool", "default": false, "iniKey": "REVERSE_GRID_POSITIONS", "iniSection": "SERVER" }
+  ]
+}

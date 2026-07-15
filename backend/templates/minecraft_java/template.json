@@ -1,0 +1,35 @@
+{
+  "id": "minecraft_java",
+  "name": "Minecraft: Java Edition",
+  "category": "sandbox",
+  "appid": null,
+  "anon": true,
+  "ports": [
+    { "port": 25565, "protocol": "tcp", "primary": true }
+  ],
+  "stop": { "type": "stdin", "command": "stop" },
+  "readyPattern": "Done (",
+  "config": { "type": "properties", "file": "server.properties" },
+  "saveCommand": "save-all",
+  "kickCommand": "kick {player}",
+  "banCommand": "ban {player}",
+  "playerPatterns": {
+    "join": "]: (\\w+) joined the game",
+    "leave": "]: (\\w+) left the game"
+  },
+  "defaultRamMb": 4096,
+  "workshopProvider": "none",
+  "installNotes": "Server jar (Paper, Vanilla, or Fabric) is downloaded by the entrypoint script on first start based on SERVER_JAR. Plugin/mod management via Modrinth/CurseForge is not yet implemented; drop jars into the mods/plugins folder via the File Manager in the meantime.",
+  "fields": [
+    { "envVar": "motd", "label": "MOTD", "type": "text", "default": "A ForgePanel Minecraft Server", "propKey": "motd" },
+    { "envVar": "gamemode", "label": "Gamemode", "type": "select", "options": ["survival", "creative", "adventure", "spectator"], "default": "survival", "propKey": "gamemode" },
+    { "envVar": "difficulty", "label": "Difficulty", "type": "select", "options": ["peaceful", "easy", "normal", "hard"], "default": "easy", "propKey": "difficulty" },
+    { "envVar": "max-players", "label": "Max Players", "type": "number", "default": 20, "propKey": "max-players" },
+    { "envVar": "online-mode", "label": "Online Mode (Premium Accounts Only)", "type": "bool", "default": true, "propKey": "online-mode" },
+    { "envVar": "white-list", "label": "Whitelist Enabled", "type": "bool", "default": false, "propKey": "white-list" },
+    { "envVar": "pvp", "label": "PVP", "type": "bool", "default": true, "propKey": "pvp" },
+    { "envVar": "level-seed", "label": "Level Seed", "type": "text", "default": "", "propKey": "level-seed" },
+    { "envVar": "level-name", "label": "Level Name", "type": "text", "default": "world", "propKey": "level-name" },
+    { "envVar": "view-distance", "label": "View Distance", "type": "number", "default": 10, "propKey": "view-distance" }
+  ]
+}

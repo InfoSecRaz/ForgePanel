@@ -1,0 +1,24 @@
+{
+  "id": "empyrion",
+  "name": "Empyrion - Galactic Survival",
+  "category": "space",
+  "appid": 530870,
+  "anon": true,
+  "ports": [
+    { "port": 30000, "protocol": "udp", "primary": true },
+    { "port": 30001, "protocol": "udp" }
+  ],
+  "stop": { "type": "stdin", "command": "saveandexit 0" },
+  "readyPattern": "Server started",
+  "config": { "type": "yaml", "file": "dedicated.yaml" },
+  "workshopProvider": "steam",
+  "defaultRamMb": 4096,
+  "fields": [
+    { "envVar": "SERVER_NAME", "label": "Server Name", "type": "text", "default": "ForgePanel Empyrion Server", "yamlKey": "ServerName" },
+    { "envVar": "SERVER_PASSWORD", "label": "Server Password", "type": "password", "default": "", "yamlKey": "ServerPassword" },
+    { "envVar": "MAX_ALLOWED", "label": "Max Players", "type": "number", "default": 8, "yamlKey": "MaxAllowedSizeClass" },
+    { "envVar": "GAME_NAME", "label": "Game Name", "type": "text", "default": "ForgePanelGame", "yamlKey": "GameName" },
+    { "envVar": "GAME_MODE", "label": "Game Mode", "type": "select", "options": ["Survival", "Creative"], "default": "Survival", "yamlKey": "GameMode" },
+    { "envVar": "MAX_ALLOWED_NPC_TYPE", "label": "Max NPC Count", "type": "number", "default": 100, "yamlKey": "MaxAllowedNpcType" }
+  ]
+}

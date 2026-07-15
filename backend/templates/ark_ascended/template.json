@@ -1,0 +1,27 @@
+{
+  "id": "ark_ascended",
+  "name": "ARK: Survival Ascended",
+  "category": "survival",
+  "appid": 2430930,
+  "anon": true,
+  "ports": [
+    { "port": 7777, "protocol": "udp", "primary": true },
+    { "port": 7778, "protocol": "udp" },
+    { "port": 27015, "protocol": "udp" }
+  ],
+  "queryPort": 27015,
+  "stop": { "type": "signal", "signal": "SIGTERM" },
+  "readyPattern": "Server has started",
+  "config": { "type": "ini", "file": "GameUserSettings.ini" },
+  "workshopProvider": "curseforge",
+  "installNotes": "ARK: Survival Ascended mods use CurseForge. Coming in a future update.",
+  "defaultRamMb": 16384,
+  "fields": [
+    { "envVar": "SERVER_NAME", "label": "Server Name", "type": "text", "default": "ForgePanel ARK Server", "iniKey": "SessionName", "iniSection": "SessionSettings" },
+    { "envVar": "ADMIN_PASSWORD", "label": "Admin Password", "type": "password", "default": "", "iniKey": "ServerAdminPassword", "iniSection": "ServerSettings" },
+    { "envVar": "SERVER_PASSWORD", "label": "Server Password", "type": "password", "default": "", "iniKey": "ServerPassword", "iniSection": "ServerSettings" },
+    { "envVar": "MAXPLAYERS", "label": "Max Players", "type": "number", "default": 70, "iniKey": "MaxPlayers", "iniSection": "ServerSettings" },
+    { "envVar": "MAP", "label": "Map", "type": "text", "default": "TheIsland_WP", "iniKey": "Map", "iniSection": "ServerSettings" },
+    { "envVar": "PVP", "label": "PVP", "type": "bool", "default": true, "iniKey": "ServerPVP", "iniSection": "ServerSettings" }
+  ]
+}

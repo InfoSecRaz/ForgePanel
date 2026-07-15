@@ -1,0 +1,25 @@
+{
+  "id": "valheim",
+  "name": "Valheim",
+  "category": "survival",
+  "appid": 896660,
+  "anon": true,
+  "ports": [
+    { "port": 2456, "protocol": "udp", "primary": true },
+    { "port": 2457, "protocol": "udp" },
+    { "port": 2458, "protocol": "udp" }
+  ],
+  "stop": { "type": "signal", "signal": "SIGTERM" },
+  "readyPattern": "Game server connected",
+  "config": { "type": "args" },
+  "workshopProvider": "thunderstore",
+  "installNotes": "Valheim mods use Thunderstore. Coming in a future update.",
+  "defaultRamMb": 4096,
+  "fields": [
+    { "envVar": "SERVER_NAME", "label": "Server Name", "type": "text", "default": "ForgePanel Valheim Server" },
+    { "envVar": "WORLD_NAME", "label": "World Name", "type": "text", "default": "Dedicated" },
+    { "envVar": "PASSWORD", "label": "Password", "type": "password", "default": "" },
+    { "envVar": "PUBLIC", "label": "Public", "type": "bool", "default": true },
+    { "envVar": "CROSSPLAY", "label": "Crossplay", "type": "bool", "default": false }
+  ]
+}

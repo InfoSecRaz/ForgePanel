@@ -1,0 +1,25 @@
+{
+  "id": "space_engineers",
+  "name": "Space Engineers",
+  "category": "space",
+  "appid": 298740,
+  "anon": true,
+  "ports": [
+    { "port": 27016, "protocol": "udp", "primary": true },
+    { "port": 27017, "protocol": "udp" }
+  ],
+  "stop": { "type": "signal", "signal": "SIGTERM" },
+  "readyPattern": "Game ready",
+  "config": { "type": "xml", "file": "SpaceEngineers-Dedicated.cfg" },
+  "workshopProvider": "steam",
+  "linuxSupported": false,
+  "wineRequired": true,
+  "installNotes": "Space Engineers has no native Linux server. Wine is required; ForgePanel runs it via xvfb-run wine64. This is experimental.",
+  "defaultRamMb": 8192,
+  "fields": [
+    { "envVar": "SERVER_NAME", "label": "Server Name", "type": "text", "default": "ForgePanel Space Engineers Server", "xmlTag": "ServerName" },
+    { "envVar": "WORLD_NAME", "label": "World Name", "type": "text", "default": "ForgePanel World", "xmlTag": "WorldName" },
+    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 8, "xmlTag": "MaxPlayers" },
+    { "envVar": "MODS", "label": "Mods (comma-separated Workshop IDs)", "type": "text", "default": "", "xmlTag": "Mods" }
+  ]
+}

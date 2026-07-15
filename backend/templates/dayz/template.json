@@ -1,0 +1,29 @@
+{
+  "id": "dayz",
+  "name": "DayZ",
+  "category": "survival",
+  "appid": 223350,
+  "anon": true,
+  "ports": [
+    { "port": 2302, "protocol": "udp", "primary": true },
+    { "port": 2303, "protocol": "udp" },
+    { "port": 2304, "protocol": "udp" },
+    { "port": 2305, "protocol": "udp" }
+  ],
+  "queryPort": 2303,
+  "stop": { "type": "signal", "signal": "SIGTERM" },
+  "readyPattern": "Published port",
+  "config": { "type": "cfg", "file": "serverDZ.cfg" },
+  "workshopProvider": "steam",
+  "workshopAppid": 221100,
+  "defaultRamMb": 6144,
+  "fields": [
+    { "envVar": "HOSTNAME", "label": "Hostname", "type": "text", "default": "ForgePanel DayZ Server", "propKey": "hostname" },
+    { "envVar": "PASSWORD", "label": "Password", "type": "password", "default": "", "propKey": "password" },
+    { "envVar": "ADMIN_PASSWORD", "label": "Admin Password", "type": "password", "default": "", "propKey": "passwordAdmin" },
+    { "envVar": "MAXPLAYERS", "label": "Max Players", "type": "number", "default": 60, "propKey": "maxPlayers" },
+    { "envVar": "TEMPLATE", "label": "Map Template", "type": "select", "options": ["dayzOffline.chernarusplus", "dayzOffline.enoch"], "default": "dayzOffline.chernarusplus", "propKey": "template" },
+    { "envVar": "DISABLE_THIRD_PERSON", "label": "Disable 3rd Person", "type": "bool", "default": false, "propKey": "disableThirdPerson" },
+    { "envVar": "FORCE_THIRD_PERSON", "label": "Force 3rd Person", "type": "bool", "default": false, "propKey": "forceThirdPerson" }
+  ]
+}

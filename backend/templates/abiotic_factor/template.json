@@ -1,0 +1,22 @@
+{
+  "id": "abiotic_factor",
+  "name": "Abiotic Factor",
+  "category": "other",
+  "appid": 2857200,
+  "anon": true,
+  "ports": [
+    { "port": 7777, "protocol": "udp", "primary": true },
+    { "port": 27015, "protocol": "udp" }
+  ],
+  "stop": { "type": "signal", "signal": "SIGTERM" },
+  "readyPattern": "Server setup complete",
+  "config": { "type": "args" },
+  "workshopProvider": "none",
+  "installNotes": "Abiotic Factor Linux server support is experimental. If issues occur, Wine may be required.",
+  "defaultRamMb": 4096,
+  "fields": [
+    { "envVar": "SERVER_NAME", "label": "Server Name", "type": "text", "default": "ForgePanel Abiotic Factor Server" },
+    { "envVar": "SERVER_PASSWORD", "label": "Server Password", "type": "password", "default": "" },
+    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 4 }
+  ]
+}

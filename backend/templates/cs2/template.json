@@ -1,0 +1,28 @@
+{
+  "id": "cs2",
+  "name": "Counter-Strike 2",
+  "category": "shooter",
+  "appid": 730,
+  "anon": true,
+  "ports": [
+    { "port": 27015, "protocol": "tcp", "primary": true },
+    { "port": 27015, "protocol": "udp" }
+  ],
+  "queryPort": 27015,
+  "stop": { "type": "stdin", "command": "quit" },
+  "readyPattern": "VAC secure mode",
+  "config": { "type": "cfg", "file": "cfg/server.cfg" },
+  "workshopProvider": "steam",
+  "installNotes": "CS2 requires a Game Server Login Token (GSLT). Get one free at steamcommunity.com/dev/managegameservers — set it as the GSLT environment variable.",
+  "defaultRamMb": 4096,
+  "fields": [
+    { "envVar": "HOSTNAME", "label": "Hostname", "type": "text", "default": "ForgePanel CS2 Server", "propKey": "hostname" },
+    { "envVar": "RCON_PASSWORD", "label": "RCON Password", "type": "password", "default": "", "propKey": "rcon_password" },
+    { "envVar": "MAXPLAYERS", "label": "Max Players", "type": "number", "default": 10, "propKey": "maxplayers" },
+    { "envVar": "MAP", "label": "Map", "type": "text", "default": "de_dust2", "propKey": "map" },
+    { "envVar": "TICKRATE", "label": "Tickrate", "type": "select", "options": ["64", "128"], "default": "64", "propKey": "tickrate" },
+    { "envVar": "SV_CHEATS", "label": "sv_cheats", "type": "bool", "default": false, "propKey": "sv_cheats" },
+    { "envVar": "MP_FRIENDLYFIRE", "label": "Friendly Fire", "type": "bool", "default": false, "propKey": "mp_friendlyfire" },
+    { "envVar": "MP_AUTOTEAMBALANCE", "label": "Auto Team Balance", "type": "bool", "default": true, "propKey": "mp_autoteambalance" }
+  ]
+}

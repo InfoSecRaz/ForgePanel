@@ -1,0 +1,27 @@
+{
+  "id": "satisfactory",
+  "name": "Satisfactory",
+  "category": "survival",
+  "appid": 1690800,
+  "anon": true,
+  "ports": [
+    { "port": 7777, "protocol": "udp", "primary": true },
+    { "port": 8888, "protocol": "udp" },
+    { "port": 15000, "protocol": "udp" },
+    { "port": 15777, "protocol": "udp" }
+  ],
+  "queryPort": 15000,
+  "stop": { "type": "signal", "signal": "SIGTERM" },
+  "readyPattern": "Server switched to state -> Idle",
+  "config": { "type": "args" },
+  "defaultRamMb": 8192,
+  "workshopProvider": "none",
+  "installNotes": "Satisfactory Dedicated Server (App ID 1690800) is downloaded anonymously via steamcmd. Most server settings (admin password, session name, gameplay tuning) are configured through the built-in Server Manager web UI on port 8888 rather than a flat config file, so ForgePanel passes only launch-time values as environment variables and links out to that UI for the rest.",
+  "fields": [
+    { "envVar": "SERVER_NAME", "label": "Server Name", "type": "text", "default": "ForgePanel Satisfactory Server" },
+    { "envVar": "ADMIN_PASSWORD", "label": "Admin Password", "type": "password", "default": "" },
+    { "envVar": "SERVER_PASSWORD", "label": "Server Password", "type": "password", "default": "" },
+    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 4 },
+    { "envVar": "AUTOSAVE_INTERVAL", "label": "Autosave Interval (seconds)", "type": "number", "default": 300 }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "id": "core_keeper",
+  "name": "Core Keeper",
+  "category": "sandbox",
+  "appid": 1963720,
+  "anon": true,
+  "ports": [
+    { "port": 27015, "protocol": "udp", "primary": true }
+  ],
+  "stop": { "type": "signal", "signal": "SIGTERM" },
+  "readyPattern": "Game ID",
+  "config": { "type": "args" },
+  "workshopProvider": "none",
+  "defaultRamMb": 2048,
+  "fields": [
+    { "envVar": "WORLD_NAME", "label": "World Name", "type": "text", "default": "ForgePanel World" },
+    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 8 },
+    { "envVar": "SEASON", "label": "Season", "type": "select", "options": ["None", "Easter", "Halloween", "Christmas", "Valentine"], "default": "None" }
+  ]
+}

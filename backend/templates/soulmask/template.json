@@ -1,0 +1,27 @@
+{
+  "id": "soulmask",
+  "name": "Soulmask",
+  "category": "survival",
+  "appid": 3017300,
+  "anon": true,
+  "ports": [
+    { "port": 8777, "protocol": "udp", "primary": true },
+    { "port": 27015, "protocol": "udp" },
+    { "port": 18888, "protocol": "tcp" }
+  ],
+  "queryPort": 27015,
+  "stop": { "type": "signal", "signal": "SIGINT" },
+  "readyPattern": "Server started",
+  "config": { "type": "ini", "file": "GameUserSettings.ini" },
+  "workshopProvider": "none",
+  "installNotes": "Use Linux AppID 3017300. Windows AppID is 3017310.",
+  "defaultRamMb": 8192,
+  "fields": [
+    { "envVar": "SERVER_NAME", "label": "Server Name", "type": "text", "default": "ForgePanel Soulmask Server", "iniKey": "SteamServerName", "iniSection": "GameSettings" },
+    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 30, "iniKey": "max_players", "iniSection": "GameSettings" },
+    { "envVar": "PASSWORD", "label": "Password", "type": "password", "default": "", "iniKey": "PSW", "iniSection": "GameSettings" },
+    { "envVar": "ADMIN_PASSWORD", "label": "Admin Password", "type": "password", "default": "", "iniKey": "adminpsw", "iniSection": "GameSettings" },
+    { "envVar": "PVP", "label": "PVP", "type": "bool", "default": true, "iniKey": "pvp", "iniSection": "GameSettings" },
+    { "envVar": "PVE", "label": "PVE", "type": "bool", "default": false, "iniKey": "pve", "iniSection": "GameSettings" }
+  ]
+}

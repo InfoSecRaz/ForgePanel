@@ -1,0 +1,23 @@
+{
+  "id": "icarus",
+  "name": "Icarus",
+  "category": "survival",
+  "appid": 2089300,
+  "anon": true,
+  "ports": [
+    { "port": 17777, "protocol": "udp", "primary": true },
+    { "port": 27015, "protocol": "udp" }
+  ],
+  "stop": { "type": "signal", "signal": "SIGTERM" },
+  "readyPattern": "Server Ready",
+  "config": { "type": "json", "file": "ServerSettings.ini" },
+  "workshopProvider": "none",
+  "defaultRamMb": 4096,
+  "fields": [
+    { "envVar": "SERVER_NAME", "label": "Server Name", "type": "text", "default": "ForgePanel Icarus Server", "jsonKey": "ServerName" },
+    { "envVar": "SERVER_PASSWORD", "label": "Server Password", "type": "password", "default": "", "jsonKey": "ServerPassword" },
+    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 8, "jsonKey": "MaxPlayers" },
+    { "envVar": "ALLOW_NON_ADMINS_LAUNCH", "label": "Allow Non-Admins to Launch", "type": "bool", "default": true, "jsonKey": "AllowNonAdminsLaunch" },
+    { "envVar": "LOADING_SCREEN_TEXT", "label": "Loading Screen Text", "type": "text", "default": "", "jsonKey": "LoadingScreenText" }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "vrising",
+  "name": "V Rising",
+  "category": "survival",
+  "appid": 1829350,
+  "anon": true,
+  "ports": [
+    { "port": 9876, "protocol": "udp", "primary": true },
+    { "port": 9877, "protocol": "udp" }
+  ],
+  "stop": { "type": "signal", "signal": "SIGTERM" },
+  "readyPattern": "Server is now ready",
+  "config": { "type": "json", "file": "ServerHostSettings.json" },
+  "workshopProvider": "none",
+  "defaultRamMb": 4096,
+  "fields": [
+    { "envVar": "NAME", "label": "Server Name", "type": "text", "default": "ForgePanel V Rising Server", "jsonKey": "Name" },
+    { "envVar": "DESCRIPTION", "label": "Description", "type": "text", "default": "", "jsonKey": "Description" },
+    { "envVar": "PASSWORD", "label": "Password", "type": "password", "default": "", "jsonKey": "Password" },
+    { "envVar": "MAXCONNECTEDUSERS", "label": "Max Connected Users", "type": "number", "default": 40, "jsonKey": "MaxConnectedUsers" },
+    { "envVar": "PVP_ENABLED", "label": "PVP Enabled", "type": "bool", "default": true, "jsonKey": "PvPEnabled" },
+    { "envVar": "CASTLE_DAMAGE", "label": "Castle Damage", "type": "select", "options": ["Never", "Always", "TimeRestricted"], "default": "TimeRestricted", "jsonKey": "CastleDamageMode" },
+    { "envVar": "BLOOD_BOUND_EQUIPMENT", "label": "Blood Bound Equipment", "type": "bool", "default": true, "jsonKey": "BloodBoundEquipment" },
+    { "envVar": "TELEPORT_BOUND_ITEMS", "label": "Teleport Bound Items", "type": "bool", "default": true, "jsonKey": "TeleportBoundItems" }
+  ]
+}

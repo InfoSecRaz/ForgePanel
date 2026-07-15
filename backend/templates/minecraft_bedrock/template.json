@@ -1,0 +1,31 @@
+{
+  "id": "minecraft_bedrock",
+  "name": "Minecraft: Bedrock Edition",
+  "category": "sandbox",
+  "appid": null,
+  "ports": [
+    { "port": 19132, "protocol": "udp", "primary": true }
+  ],
+  "stop": { "type": "stdin", "command": "stop" },
+  "readyPattern": "Server started",
+  "config": { "type": "properties", "file": "server.properties" },
+  "kickCommand": "kick {player}",
+  "playerPatterns": {
+    "join": "Player connected: (.+),",
+    "leave": "Player disconnected: (.+),"
+  },
+  "defaultRamMb": 2048,
+  "workshopProvider": "none",
+  "installNotes": "Minecraft Bedrock server is downloaded directly from Mojang (no Steam account required).",
+  "fields": [
+    { "envVar": "server-name", "label": "Server Name", "type": "text", "default": "ForgePanel Bedrock Server", "propKey": "server-name" },
+    { "envVar": "max-players", "label": "Max Players", "type": "number", "default": 10, "propKey": "max-players" },
+    { "envVar": "gamemode", "label": "Gamemode", "type": "select", "options": ["survival", "creative", "adventure"], "default": "survival", "propKey": "gamemode" },
+    { "envVar": "difficulty", "label": "Difficulty", "type": "select", "options": ["peaceful", "easy", "normal", "hard"], "default": "easy", "propKey": "difficulty" },
+    { "envVar": "allow-cheats", "label": "Allow Cheats", "type": "bool", "default": false, "propKey": "allow-cheats" },
+    { "envVar": "online-mode", "label": "Online Mode (Xbox Live Auth)", "type": "bool", "default": true, "propKey": "online-mode" },
+    { "envVar": "level-name", "label": "Level Name", "type": "text", "default": "Bedrock level", "propKey": "level-name" },
+    { "envVar": "level-seed", "label": "Level Seed", "type": "text", "default": "", "propKey": "level-seed" },
+    { "envVar": "default-player-permission-level", "label": "Default Player Permission", "type": "select", "options": ["visitor", "member", "operator"], "default": "member", "propKey": "default-player-permission-level" }
+  ]
+}

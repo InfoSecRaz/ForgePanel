@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+}
+
+.status-badge {
+  @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium;
+}
+
+.status-dot {
+  @apply w-1.5 h-1.5 rounded-full;
+}
+
+.btn {
+  @apply px-3 py-1.5 rounded-md text-sm font-medium transition-colors;
+}
+
+.btn-primary {
+  @apply bg-info text-white hover:bg-blue-600;
+}
+
+.btn-secondary {
+  @apply bg-surface2 text-text-primary hover:bg-border;
+}
+
+.btn-danger {
+  @apply bg-stopped text-white hover:bg-red-600;
+}
+
+.card {
+  @apply bg-surface border border-border rounded-lg;
+}
+
+.input {
+  @apply bg-surface2 border border-border rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-info;
+}

@@ -1,0 +1,30 @@
+{
+  "id": "palworld",
+  "name": "Palworld",
+  "category": "survival",
+  "appid": 2394010,
+  "anon": true,
+  "ports": [
+    { "port": 8211, "protocol": "udp", "primary": true },
+    { "port": 25575, "protocol": "tcp" },
+    { "port": 27015, "protocol": "udp" }
+  ],
+  "queryPort": 27015,
+  "stop": { "type": "signal", "signal": "SIGTERM" },
+  "readyPattern": "Setting breakpad minidump AppID",
+  "config": { "type": "ini", "file": "PalWorldSettings.ini" },
+  "workshopProvider": "none",
+  "defaultRamMb": 8192,
+  "fields": [
+    { "envVar": "SERVER_NAME", "label": "Server Name", "type": "text", "default": "ForgePanel Palworld Server", "iniKey": "ServerName", "iniSection": "/Script/Pal.PalGameWorldSettings" },
+    { "envVar": "SERVER_DESCRIPTION", "label": "Server Description", "type": "text", "default": "", "iniKey": "ServerDescription", "iniSection": "/Script/Pal.PalGameWorldSettings" },
+    { "envVar": "ADMIN_PASSWORD", "label": "Admin Password", "type": "password", "default": "", "iniKey": "AdminPassword", "iniSection": "/Script/Pal.PalGameWorldSettings" },
+    { "envVar": "SERVER_PASSWORD", "label": "Server Password", "type": "password", "default": "", "iniKey": "ServerPassword", "iniSection": "/Script/Pal.PalGameWorldSettings" },
+    { "envVar": "MAXPLAYERS", "label": "Max Players", "type": "number", "default": 32, "iniKey": "ServerPlayerMaxNum", "iniSection": "/Script/Pal.PalGameWorldSettings" },
+    { "envVar": "DIFFICULTY", "label": "Difficulty", "type": "select", "options": ["None", "Normal", "Hard"], "default": "None", "iniKey": "Difficulty", "iniSection": "/Script/Pal.PalGameWorldSettings" },
+    { "envVar": "DEATH_PENALTY", "label": "Death Penalty", "type": "select", "options": ["None", "ItemOnly", "ItemAndEquipment", "All"], "default": "ItemAndEquipment", "iniKey": "DeathPenalty", "iniSection": "/Script/Pal.PalGameWorldSettings" },
+    { "envVar": "EXP_RATE", "label": "EXP Rate", "type": "number", "default": 1, "iniKey": "ExpRate", "iniSection": "/Script/Pal.PalGameWorldSettings" },
+    { "envVar": "PAL_CAPTURE_RATE", "label": "Pal Capture Rate", "type": "number", "default": 1, "iniKey": "PalCaptureRate", "iniSection": "/Script/Pal.PalGameWorldSettings" },
+    { "envVar": "DROP_ITEM_MULTIPLIER", "label": "Drop Item Multiplier", "type": "number", "default": 1, "iniKey": "PalDropItemRate", "iniSection": "/Script/Pal.PalGameWorldSettings" }
+  ]
+}

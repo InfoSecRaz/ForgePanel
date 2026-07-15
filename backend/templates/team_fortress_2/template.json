@@ -1,0 +1,25 @@
+{
+  "id": "team_fortress_2",
+  "name": "Team Fortress 2",
+  "category": "shooter",
+  "appid": 232250,
+  "anon": true,
+  "ports": [
+    { "port": 27015, "protocol": "tcp", "primary": true },
+    { "port": 27015, "protocol": "udp" },
+    { "port": 27020, "protocol": "udp" }
+  ],
+  "stop": { "type": "stdin", "command": "quit" },
+  "readyPattern": "VAC secure mode",
+  "config": { "type": "cfg", "file": "cfg/server.cfg" },
+  "workshopProvider": "steam",
+  "installNotes": "TF2 requires a GSLT. Get one at steamcommunity.com/dev/managegameservers — set it as the GSLT environment variable.",
+  "defaultRamMb": 2048,
+  "fields": [
+    { "envVar": "HOSTNAME", "label": "Hostname", "type": "text", "default": "ForgePanel TF2 Server", "propKey": "hostname" },
+    { "envVar": "RCON_PASSWORD", "label": "RCON Password", "type": "password", "default": "", "propKey": "rcon_password" },
+    { "envVar": "MAXPLAYERS", "label": "Max Players", "type": "number", "default": 24, "propKey": "maxplayers" },
+    { "envVar": "MAP", "label": "Map", "type": "text", "default": "cp_dustbowl", "propKey": "map" },
+    { "envVar": "SV_PURE", "label": "sv_pure", "type": "select", "options": ["-1", "0", "1", "2"], "default": "0", "propKey": "sv_pure" }
+  ]
+}

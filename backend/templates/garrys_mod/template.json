@@ -1,0 +1,25 @@
+{
+  "id": "garrys_mod",
+  "name": "Garry's Mod",
+  "category": "sandbox",
+  "appid": 4020,
+  "anon": true,
+  "ports": [
+    { "port": 27015, "protocol": "tcp", "primary": true },
+    { "port": 27015, "protocol": "udp" }
+  ],
+  "stop": { "type": "stdin", "command": "quit" },
+  "readyPattern": "VAC secure mode",
+  "config": { "type": "cfg", "file": "cfg/server.cfg" },
+  "workshopProvider": "steam",
+  "installNotes": "GMod requires a GSLT. Get one at steamcommunity.com/dev/managegameservers. Workshop collections load via +host_workshop_collection in startup args.",
+  "defaultRamMb": 4096,
+  "fields": [
+    { "envVar": "HOSTNAME", "label": "Hostname", "type": "text", "default": "ForgePanel GMod Server", "propKey": "hostname" },
+    { "envVar": "RCON_PASSWORD", "label": "RCON Password", "type": "password", "default": "", "propKey": "rcon_password" },
+    { "envVar": "MAXPLAYERS", "label": "Max Players", "type": "number", "default": 16, "propKey": "maxplayers" },
+    { "envVar": "MAP", "label": "Map", "type": "text", "default": "gm_construct", "propKey": "map" },
+    { "envVar": "GAMEMODE", "label": "Gamemode", "type": "text", "default": "sandbox", "propKey": "gamemode" },
+    { "envVar": "SV_LAN", "label": "LAN Only", "type": "bool", "default": false, "propKey": "sv_lan" }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "terraria",
+  "name": "Terraria",
+  "category": "sandbox",
+  "appid": 105600,
+  "anon": true,
+  "ports": [
+    { "port": 7777, "protocol": "tcp", "primary": true }
+  ],
+  "stop": { "type": "stdin", "command": "exit" },
+  "readyPattern": "Listening on port",
+  "config": { "type": "txt", "file": "serverconfig.txt" },
+  "workshopProvider": "none",
+  "defaultRamMb": 2048,
+  "fields": [
+    { "envVar": "WORLD", "label": "World File", "type": "text", "default": "world1.wld", "propKey": "world" },
+    { "envVar": "WORLDNAME", "label": "World Name", "type": "text", "default": "ForgePanel World", "propKey": "worldname" },
+    { "envVar": "MAXPLAYERS", "label": "Max Players", "type": "number", "default": 8, "propKey": "maxplayers" },
+    { "envVar": "PASSWORD", "label": "Password", "type": "password", "default": "", "propKey": "password" },
+    { "envVar": "MOTD", "label": "MOTD", "type": "text", "default": "Welcome to ForgePanel Terraria!", "propKey": "motd" },
+    { "envVar": "AUTOCREATE", "label": "World Size", "type": "select", "options": ["1", "2", "3"], "default": "2", "propKey": "autocreate" },
+    { "envVar": "DIFFICULTY", "label": "Difficulty", "type": "select", "options": ["0", "1", "2", "3"], "default": "0", "propKey": "difficulty" },
+    { "envVar": "WORLDPATH", "label": "World Path", "type": "text", "default": "/server/data/Worlds", "propKey": "worldpath" },
+    { "envVar": "SECURE", "label": "Secure", "type": "bool", "default": true, "propKey": "secure" },
+    { "envVar": "LANGUAGE", "label": "Language", "type": "select", "options": ["en-US", "de-DE", "it-IT", "fr-FR", "es-ES", "ru-RU", "zh-Hans", "pt-BR", "pl-PL"], "default": "en-US", "propKey": "language" }
+  ]
+}

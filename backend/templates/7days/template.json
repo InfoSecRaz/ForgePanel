@@ -1,0 +1,32 @@
+{
+  "id": "7days",
+  "name": "7 Days to Die",
+  "category": "survival",
+  "appid": 294420,
+  "anon": true,
+  "ports": [
+    { "port": 26900, "protocol": "tcp", "primary": true },
+    { "port": 26900, "protocol": "udp" },
+    { "port": 26901, "protocol": "udp" },
+    { "port": 26902, "protocol": "udp" },
+    { "port": 26903, "protocol": "udp" }
+  ],
+  "queryPort": 26900,
+  "stop": { "type": "stdin", "command": "shutdown" },
+  "readyPattern": "GameServer.BindToNetwork",
+  "config": { "type": "xml", "file": "serverconfig.xml" },
+  "workshopProvider": "steam",
+  "defaultRamMb": 6144,
+  "fields": [
+    { "envVar": "SERVER_NAME", "label": "Server Name", "type": "text", "default": "ForgePanel 7 Days Server", "xmlTag": "ServerName" },
+    { "envVar": "SERVER_DESCRIPTION", "label": "Server Description", "type": "text", "default": "", "xmlTag": "ServerDescription" },
+    { "envVar": "SERVER_PASSWORD", "label": "Server Password", "type": "password", "default": "", "xmlTag": "ServerPassword" },
+    { "envVar": "MAXPLAYERS", "label": "Max Players", "type": "number", "default": 8, "xmlTag": "ServerMaxPlayerCount" },
+    { "envVar": "GAME_WORLD", "label": "Game World", "type": "select", "options": ["Navezgane", "RNG Worlds"], "default": "Navezgane", "xmlTag": "GameWorld" },
+    { "envVar": "GAME_NAME", "label": "Game Name", "type": "text", "default": "My Game", "xmlTag": "GameName" },
+    { "envVar": "PVP_ENABLED", "label": "PVP Enabled", "type": "bool", "default": true, "xmlTag": "GameMode" },
+    { "envVar": "LAND_CLAIM_SIZE", "label": "Land Claim Size", "type": "number", "default": 41, "xmlTag": "LandClaimSize" },
+    { "envVar": "LOOT_ABUNDANCE_PERCENT", "label": "Loot Abundance %", "type": "number", "default": 100, "xmlTag": "LootAbundance" },
+    { "envVar": "XP_MULTIPLIER", "label": "XP Multiplier", "type": "number", "default": 100, "xmlTag": "XPMultiplier" }
+  ]
+}

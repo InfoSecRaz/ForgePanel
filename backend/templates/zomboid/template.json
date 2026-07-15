@@ -1,0 +1,36 @@
+{
+  "id": "zomboid",
+  "name": "Project Zomboid",
+  "category": "survival",
+  "appid": 380870,
+  "anon": true,
+  "ports": [
+    { "port": 16261, "protocol": "udp", "primary": true },
+    { "port": 16262, "protocol": "udp" }
+  ],
+  "queryPort": 16262,
+  "stop": { "type": "stdin", "command": "quit" },
+  "readyPattern": "SERVER STARTED",
+  "config": { "type": "ini", "file": ".cache/Zomboid/Server/servertest.ini" },
+  "saveCommand": "save",
+  "kickCommand": "kickuser \"{player}\"",
+  "banCommand": "banuser \"{player}\"",
+  "playerPatterns": {
+    "join": "^\\[.*\\] \\[.*\\] : (.+) fully connected",
+    "leave": "^\\[.*\\] \\[.*\\] : Player disconnected: (.+)"
+  },
+  "defaultRamMb": 4096,
+  "workshopProvider": "steam",
+  "workshopAppid": 108600,
+  "workshopModListField": { "modsKey": "Mods", "itemsKey": "WorkshopItems" },
+  "installNotes": "Config lives at .cache/Zomboid/Server/servertest.ini; the internal server identifier is fixed to \"servertest\" so ForgePanel always knows the config path, while PublicName is the player-facing name shown in the server browser.",
+  "fields": [
+    { "envVar": "PUBLIC_NAME", "label": "Public Server Name", "type": "text", "default": "ForgePanel Zomboid Server", "iniKey": "PublicName", "iniSection": "General" },
+    { "envVar": "ADMIN_USER", "label": "Admin Username", "type": "text", "default": "admin", "iniKey": "AdminUsername", "iniSection": "General" },
+    { "envVar": "ADMIN_PASSWORD", "label": "Admin Password", "type": "password", "default": "", "iniKey": "AdminPassword", "iniSection": "General" },
+    { "envVar": "SERVER_PASSWORD", "label": "Server Password", "type": "password", "default": "", "iniKey": "Password", "iniSection": "General" },
+    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 16, "iniKey": "MaxPlayers", "iniSection": "General" },
+    { "envVar": "PVP", "label": "PVP", "type": "bool", "default": true, "iniKey": "PVP", "iniSection": "General" },
+    { "envVar": "PAUSE_EMPTY", "label": "Pause when empty", "type": "bool", "default": true, "iniKey": "PauseEmpty", "iniSection": "General" }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "sons_of_forest",
+  "name": "Sons Of The Forest",
+  "category": "survival",
+  "appid": 2465200,
+  "anon": true,
+  "ports": [
+    { "port": 8766, "protocol": "udp", "primary": true },
+    { "port": 9700, "protocol": "udp" },
+    { "port": 27016, "protocol": "udp" }
+  ],
+  "stop": { "type": "signal", "signal": "SIGTERM" },
+  "readyPattern": "NetSync host started",
+  "config": { "type": "json", "file": "dedicatedserver.cfg" },
+  "workshopProvider": "none",
+  "linuxSupported": false,
+  "wineRequired": true,
+  "installNotes": "Sons Of The Forest has no native Linux server. Wine is required; ForgePanel runs it via xvfb-run wine64. This is experimental.",
+  "defaultRamMb": 8192,
+  "fields": [
+    { "envVar": "SERVER_NAME", "label": "Server Name", "type": "text", "default": "ForgePanel SOTF Server", "jsonKey": "ServerName" },
+    { "envVar": "SERVER_PASSWORD", "label": "Server Password", "type": "password", "default": "", "jsonKey": "ServerPassword" },
+    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 8, "jsonKey": "MaxPlayers" },
+    { "envVar": "LAN_ONLY", "label": "LAN Only", "type": "bool", "default": false, "jsonKey": "LanOnly" },
+    { "envVar": "SAVE_INTERVAL", "label": "Save Interval (s)", "type": "number", "default": 300, "jsonKey": "SaveInterval" },
+    { "envVar": "IDLE_KICK_TIME", "label": "Idle Kick Time (s)", "type": "number", "default": 0, "jsonKey": "IdleKickTime" }
+  ]
+}

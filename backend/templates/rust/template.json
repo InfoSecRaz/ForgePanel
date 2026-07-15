@@ -1,0 +1,31 @@
+{
+  "id": "rust",
+  "name": "Rust",
+  "category": "survival",
+  "appid": 258550,
+  "anon": true,
+  "ports": [
+    { "port": 28015, "protocol": "tcp", "primary": true },
+    { "port": 28016, "protocol": "tcp" },
+    { "port": 28017, "protocol": "udp" }
+  ],
+  "queryPort": 28017,
+  "stop": { "type": "stdin", "command": "quit" },
+  "readyPattern": "Server startup complete",
+  "config": { "type": "cfg", "file": "server.cfg" },
+  "workshopProvider": "steam",
+  "workshopAppid": 252490,
+  "defaultRamMb": 8192,
+  "fields": [
+    { "envVar": "HOSTNAME", "label": "Hostname", "type": "text", "default": "ForgePanel Rust Server", "propKey": "hostname" },
+    { "envVar": "DESCRIPTION", "label": "Description", "type": "text", "default": "", "propKey": "description" },
+    { "envVar": "MAXPLAYERS", "label": "Max Players", "type": "number", "default": 50, "propKey": "maxplayers" },
+    { "envVar": "WORLDSIZE", "label": "World Size", "type": "number", "default": 3500, "propKey": "worldsize" },
+    { "envVar": "SEED", "label": "Seed", "type": "number", "default": 12345, "propKey": "seed" },
+    { "envVar": "RCON_PASSWORD", "label": "RCON Password", "type": "password", "default": "", "propKey": "rcon_password" },
+    { "envVar": "SAVEINTERVAL", "label": "Save Interval (s)", "type": "number", "default": 600, "propKey": "saveinterval" },
+    { "envVar": "URL", "label": "Server URL", "type": "text", "default": "", "propKey": "url" },
+    { "envVar": "HEADERIMAGE", "label": "Header Image URL", "type": "text", "default": "", "propKey": "headerimage" },
+    { "envVar": "LEVEL", "label": "Level", "type": "select", "options": ["Procedural", "Barren", "HapisIsland"], "default": "Procedural", "propKey": "level" }
+  ]
+}

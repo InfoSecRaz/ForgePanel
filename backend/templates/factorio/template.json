@@ -1,0 +1,27 @@
+{
+  "id": "factorio",
+  "name": "Factorio",
+  "category": "sandbox",
+  "appid": 427520,
+  "anon": true,
+  "ports": [
+    { "port": 34197, "protocol": "udp", "primary": true }
+  ],
+  "stop": { "type": "signal", "signal": "SIGTERM" },
+  "readyPattern": "Hosting game",
+  "config": { "type": "json", "file": "server-settings.json" },
+  "workshopProvider": "none",
+  "defaultRamMb": 2048,
+  "fields": [
+    { "envVar": "NAME", "label": "Server Name", "type": "text", "default": "ForgePanel Factorio Server", "jsonKey": "name" },
+    { "envVar": "DESCRIPTION", "label": "Description", "type": "text", "default": "", "jsonKey": "description" },
+    { "envVar": "PASSWORD", "label": "Password", "type": "password", "default": "", "jsonKey": "game_password" },
+    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 0, "jsonKey": "max_players" },
+    { "envVar": "VISIBILITY_PUBLIC", "label": "Public Visibility", "type": "bool", "default": false, "jsonKey": "visibility_public" },
+    { "envVar": "VISIBILITY_LAN", "label": "LAN Visibility", "type": "bool", "default": true, "jsonKey": "visibility_lan" },
+    { "envVar": "AUTOSAVE_INTERVAL", "label": "Autosave Interval (min)", "type": "number", "default": 10, "jsonKey": "autosave_interval" },
+    { "envVar": "AUTOSAVE_SLOTS", "label": "Autosave Slots", "type": "number", "default": 5, "jsonKey": "autosave_slots" },
+    { "envVar": "ALLOW_COMMANDS", "label": "Allow Commands", "type": "select", "options": ["true", "false", "admins-only"], "default": "admins-only", "jsonKey": "allow_commands" },
+    { "envVar": "AUTO_PAUSE", "label": "Auto Pause", "type": "bool", "default": true, "jsonKey": "auto_pause" }
+  ]
+}

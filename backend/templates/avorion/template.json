@@ -1,0 +1,23 @@
+{
+  "id": "avorion",
+  "name": "Avorion",
+  "category": "space",
+  "appid": 565060,
+  "anon": true,
+  "ports": [
+    { "port": 27000, "protocol": "udp", "primary": true },
+    { "port": 27003, "protocol": "udp" }
+  ],
+  "stop": { "type": "stdin", "command": "/save" },
+  "readyPattern": "Server startup complete",
+  "config": { "type": "ini", "file": "server.ini" },
+  "workshopProvider": "steam",
+  "installNotes": "Stop command triggers a save; the server process performs a graceful shutdown afterward.",
+  "defaultRamMb": 4096,
+  "fields": [
+    { "envVar": "SERVER_NAME", "label": "Server Name", "type": "text", "default": "ForgePanel Avorion Server", "iniKey": "ServerName", "iniSection": "General" },
+    { "envVar": "ADMIN_PASSWORD", "label": "Admin Password", "type": "password", "default": "", "iniKey": "AdminPassword", "iniSection": "General" },
+    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 16, "iniKey": "MaxPlayers", "iniSection": "General" },
+    { "envVar": "GALAXY_NAME", "label": "Galaxy Name", "type": "text", "default": "ForgePanelGalaxy", "iniKey": "GalaxyName", "iniSection": "General" }
+  ]
+}

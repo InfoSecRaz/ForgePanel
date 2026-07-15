@@ -1,0 +1,26 @@
+{
+  "id": "enshrouded",
+  "name": "Enshrouded",
+  "category": "survival",
+  "appid": 2278520,
+  "anon": false,
+  "ports": [
+    { "port": 15636, "protocol": "udp", "primary": true },
+    { "port": 15637, "protocol": "udp" }
+  ],
+  "stop": { "type": "signal", "signal": "SIGTERM" },
+  "readyPattern": "Server online",
+  "config": { "type": "json", "file": "enshrouded_server.json" },
+  "workshopProvider": "none",
+  "linuxSupported": false,
+  "wineRequired": true,
+  "installNotes": "Enshrouded requires a Steam account that owns the game. Set STEAM_USER and STEAM_PASS on the container; anonymous login will not work. Enshrouded has no native Linux server. Wine is required; ForgePanel runs it via xvfb-run wine64. This is experimental.",
+  "defaultRamMb": 8192,
+  "fields": [
+    { "envVar": "NAME", "label": "Server Name", "type": "text", "default": "ForgePanel Enshrouded Server", "jsonKey": "name" },
+    { "envVar": "PASSWORD", "label": "Password", "type": "password", "default": "", "jsonKey": "password" },
+    { "envVar": "GAME_PORT", "label": "Game Port", "type": "number", "default": 15636, "jsonKey": "gamePort" },
+    { "envVar": "QUERY_PORT", "label": "Query Port", "type": "number", "default": 15637, "jsonKey": "queryPort" },
+    { "envVar": "MAX_CONNECTIONS", "label": "Max Connections", "type": "number", "default": 16, "jsonKey": "slotCount" }
+  ]
+}

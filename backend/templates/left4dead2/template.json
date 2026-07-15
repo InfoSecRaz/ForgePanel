@@ -1,0 +1,24 @@
+{
+  "id": "left4dead2",
+  "name": "Left 4 Dead 2",
+  "category": "shooter",
+  "appid": 222860,
+  "anon": true,
+  "ports": [
+    { "port": 27015, "protocol": "tcp", "primary": true },
+    { "port": 27015, "protocol": "udp" },
+    { "port": 27020, "protocol": "udp" }
+  ],
+  "stop": { "type": "stdin", "command": "quit" },
+  "readyPattern": "VAC secure mode",
+  "config": { "type": "cfg", "file": "cfg/server.cfg" },
+  "workshopProvider": "steam",
+  "defaultRamMb": 2048,
+  "fields": [
+    { "envVar": "HOSTNAME", "label": "Hostname", "type": "text", "default": "ForgePanel L4D2 Server", "propKey": "hostname" },
+    { "envVar": "RCON_PASSWORD", "label": "RCON Password", "type": "password", "default": "", "propKey": "rcon_password" },
+    { "envVar": "MAXPLAYERS", "label": "Max Players", "type": "number", "default": 8, "propKey": "maxplayers" },
+    { "envVar": "MAP", "label": "Map", "type": "text", "default": "c1m1_hotel", "propKey": "map" },
+    { "envVar": "SV_LAN", "label": "LAN Only", "type": "bool", "default": false, "propKey": "sv_lan" }
+  ]
+}
