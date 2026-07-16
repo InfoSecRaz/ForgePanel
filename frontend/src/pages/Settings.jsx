@@ -61,9 +61,9 @@ function ForgeResourcesSection({ host }) {
     <div className="card p-4 space-y-1.5 text-[13px]">
       <p><span className="text-text-secondary">Docker network:</span> <span className="text-text-primary">forgepanel-net</span></p>
       <p><span className="text-text-secondary">Container prefix:</span> <span className="text-text-primary">fp-</span></p>
-      <p><span className="text-text-secondary">Total RAM:</span> <span className="text-text-primary">{host ? `${(host.totalRamMb / 1024).toFixed(1)} GB` : '—'}</span></p>
-      <p><span className="text-text-secondary">CPU cores:</span> <span className="text-text-primary">{host?.cpuCores ?? '—'}</span></p>
-      <p><span className="text-text-secondary">Total disk:</span> <span className="text-text-primary">{host?.totalDiskGb ? `${host.totalDiskGb} GB` : '—'}</span></p>
+      <p><span className="text-text-secondary">Total RAM:</span> <span className="text-text-primary">{host ? `${(host.totalRamMb / 1024).toFixed(1)} GB` : '-'}</span></p>
+      <p><span className="text-text-secondary">CPU cores:</span> <span className="text-text-primary">{host?.cpuCores ?? '-'}</span></p>
+      <p><span className="text-text-secondary">Total disk:</span> <span className="text-text-primary">{host?.totalDiskGb ? `${host.totalDiskGb} GB` : '-'}</span></p>
     </div>
   );
 }

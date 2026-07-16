@@ -2,6 +2,14 @@ import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
 import { getSocket } from '../../lib/socket';
 import { useToast } from '../../lib/ToastContext';
+function formatSubscribers(count) {
+  return `${Number(count || 0).toLocaleString()} subscribers`;
+}
+
+function formatUpdated(unixSeconds) {
+  if (!unixSeconds) return null;
+  return `Updated ${new Date(unixSeconds * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+}
 
 export default function Workshop({ server }) {
   const [installed, setInstalled] = useState([]);
@@ -90,7 +98,7 @@ export default function Workshop({ server }) {
     <div className="p-lg space-y-lg">
       {progress && (
         <div className="card p-3 text-caption text-text-secondary">
-          {progress.current && progress.total ? `Installing ${progress.current} of ${progress.total}` : 'Installing...'} — {progress.line}
+          {progress.current && progress.total ? `Installing ${progress.current} of ${progress.total}: ${progress.line}` : `Installing: ${progress.line}`}
         </div>
       )}
 
@@ -121,8 +129,20 @@ export default function Workshop({ server }) {
         </div>
         <div className="grid grid-cols-2 gap-3">
           {results.map((item) => (
-            <div key={item.id} className="flex items-center justify-between border border-hairline rounded-card p-2.5">
-              <span className="text-[13px] text-text-primary">{item.title}</span>
+            <div key={item.id} className="flex items-center gap-3 border border-hairline rounded-card p-2.5">
+              {item.thumbnailUrl ? (
+                <img src={item.thumbnailUrl} alt="" className="w-16 h-16 rounded-[6px] object-cover flex-shrink-0" />
+              ) : (
+                <div className="w-16 h-16 rounded-[6px] bg-surface3 flex-shrink-0" />
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="text-[13px] text-text-primary truncate">{item.title}</div>
+                {item.author && <div className="text-label text-text-muted truncate">by {item.author}</div>}
+                <div className="text-label text-text-muted truncate">
+                  {formatSubscribers(item.subscriptions)}
+                  {formatUpdated(item.timeUpdated) ? ` · ${formatUpdated(item.timeUpdated)}` : ''}
+                </div>
+              </div>
               <button className="btn btn-secondary text-label flex-shrink-0" onClick={() => installMod(item.id)}>Install</button>
             </div>
           ))}
@@ -133,7 +153,7 @@ export default function Workshop({ server }) {
         <h2 className="card-title">Install Collection</h2>
         <p className="text-caption text-text-muted mb-3">
           Find collections on the <a href="https://steamcommunity.com/workshop/" target="_blank" rel="noreferrer" className="text-accent">Steam Workshop</a>.
-          The collection ID is the number in its URL — e.g. steamcommunity.com/sharedfiles/filedetails/?id=<span className="text-text-secondary">2470930620</span>.
+          The collection ID is the number in its URL, e.g. steamcommunity.com/sharedfiles/filedetails/?id=<span className="text-text-secondary">2470930620</span>.
         </p>
         <div className="flex gap-2 mb-3">
           <input className="input" placeholder="e.g. 2470930620" value={collectionId} onChange={(e) => setCollectionId(e.target.value)} />

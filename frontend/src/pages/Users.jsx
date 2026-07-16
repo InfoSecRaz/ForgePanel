@@ -199,9 +199,11 @@ export default function Users() {
 
       {deleteTarget && (
         <ConfirmModal
-          title="Delete user?"
-          message={`This permanently deletes "${deleteTarget.username}" and their permissions. This cannot be undone.`}
+          title="Delete user"
+          message={`This will permanently remove ${deleteTarget.username}. This cannot be undone.`}
+          warning={deleteTarget.isAdmin ? 'Warning: this is an admin account.' : undefined}
           confirmLabel="Delete"
+          confirmText={deleteTarget.username}
           onConfirm={confirmDeleteUser}
           onCancel={() => setDeleteTarget(null)}
         />

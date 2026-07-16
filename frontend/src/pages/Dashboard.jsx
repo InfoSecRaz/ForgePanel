@@ -4,6 +4,7 @@ import { api } from '../lib/api';
 import { getSocket } from '../lib/socket';
 import { useToast } from '../lib/ToastContext';
 import StatusBadge from '../components/StatusBadge';
+import { formatUptime } from '../lib/format';
 
 function MiniBar({ percent, color }) {
   return (
@@ -32,6 +33,7 @@ function ResourceBar({ label, used, total, unit }) {
 function ServerCard({ server }) {
   const cpuPercent = server._cpu ?? 0;
   const ramPercent = server.ram_limit_mb ? Math.min(100, ((server._ram ?? 0) / server.ram_limit_mb) * 100) : 0;
+  const playerCount = server._players ?? 0;
 
   return (
     <Link
@@ -49,12 +51,19 @@ function ServerCard({ server }) {
         <StatusBadge state={server.state} />
       </div>
       <div className="flex items-center gap-3">
+        <span className="text-label text-text-muted w-7 flex-shrink-0">CPU</span>
         <MiniBar percent={cpuPercent} color="bg-accent" />
         <span className="text-label text-text-muted w-8 text-right">{Math.round(cpuPercent)}%</span>
       </div>
       <div className="flex items-center gap-3">
+        <span className="text-label text-text-muted w-7 flex-shrink-0">RAM</span>
         <MiniBar percent={ramPercent} color="bg-running" />
         <span className="text-label text-text-muted w-8 text-right">{Math.round(ramPercent)}%</span>
+      </div>
+      <div className="flex items-center justify-between text-label text-text-muted">
+        <span>{playerCount} / {server.maxPlayers ?? '?'} players</span>
+        <span>{formatUptime(server)}</span>
+        <span>Port {server.port}</span>
       </div>
     </Link>
   );
@@ -80,8 +89,8 @@ export default function Dashboard() {
     const onStateChange = ({ serverId, state }) => {
       setServers((prev) => prev.map((s) => (s.id === serverId ? { ...s, state } : s)));
     };
-    const onStats = ({ serverId, cpu, ram }) => {
-      setServers((prev) => prev.map((s) => (s.id === serverId ? { ...s, _cpu: cpu, _ram: ram } : s)));
+    const onStats = ({ serverId, cpu, ram, players }) => {
+      setServers((prev) => prev.map((s) => (s.id === serverId ? { ...s, _cpu: cpu, _ram: ram, _players: players } : s)));
     };
     socket.on('state:change', onStateChange);
     socket.on('stats:update', onStats);

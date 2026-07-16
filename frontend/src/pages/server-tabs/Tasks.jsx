@@ -99,7 +99,7 @@ export default function Tasks({ server }) {
                 <td className="p-3 text-text-primary">{task.name}</td>
                 <td className="p-3 text-text-secondary">{task.type}</td>
                 <td className="p-3 text-text-secondary" style={{ fontFamily: 'var(--font-mono)' }}>{task.cron_expression}</td>
-                <td className="p-3 text-text-secondary">{task.last_run ? new Date(task.last_run).toLocaleString() : '—'}</td>
+                <td className="p-3 text-text-secondary">{task.last_run ? new Date(task.last_run).toLocaleString() : '-'}</td>
                 <td className="p-3 text-right space-x-3">
                   <button className="text-accent text-label" onClick={() => toggleEnabled(task)}>{task.enabled ? 'Disable' : 'Enable'}</button>
                   <button className="text-stopped text-label" onClick={() => setDeleteTarget(task)}>Delete</button>
@@ -108,7 +108,12 @@ export default function Tasks({ server }) {
             ))}
           </tbody>
         </table>
-        {tasks.length === 0 && <p className="p-6 text-center text-text-muted text-caption">No scheduled tasks.</p>}
+        {tasks.length === 0 && (
+          <div className="p-6 text-center text-text-muted text-caption space-y-2">
+            <p>No scheduled tasks yet.</p>
+            <p>You can schedule: automatic restarts, backups, custom commands, and update checks, all on a cron schedule you define.</p>
+          </div>
+        )}
       </div>
 
       {deleteTarget && (

@@ -2,10 +2,34 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useToast } from '../lib/ToastContext';
+import { getFieldHelp } from '../lib/fieldHelp';
+
+function primaryPort(template) {
+  const entry = (template.ports || []).find((p) => p.primary) || (template.ports || [])[0];
+  return entry ? entry.port : '';
+}
+
+function getBadges(template) {
+  const badges = [];
+  if (template.installNotes && template.installNotes.includes('GSLT')) {
+    badges.push({ label: 'Needs GSLT', className: 'bg-warning/15 text-warning' });
+  }
+  if (template.wineRequired) {
+    badges.push({ label: 'Experimental', className: 'bg-warning/15 text-warning' });
+  }
+  if (template.anon === false) {
+    badges.push({ label: 'Steam Login', className: 'bg-info/15 text-info' });
+  }
+  return badges;
+}
 
 function NewServerModal({ template, onClose, onCreated }) {
   const [name, setName] = useState('');
   const [ramLimitMb, setRamLimitMb] = useState(template.defaultRamMb || 2048);
+  const [cpuLimitPercent, setCpuLimitPercent] = useState(100);
+  const [diskLimitGb, setDiskLimitGb] = useState(20);
+  const [port, setPort] = useState('');
+  const [totalRamMb, setTotalRamMb] = useState(8192);
   const [fieldValues, setFieldValues] = useState(() => {
     const initial = {};
     (template.fields || []).forEach((f) => (initial[f.envVar] = f.default));
@@ -13,6 +37,10 @@ function NewServerModal({ template, onClose, onCreated }) {
   });
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    api.get('/settings/host').then((host) => setTotalRamMb(host.totalRamMb || 8192)).catch(() => {});
+  }, []);
 
   async function handleCreate() {
     setCreating(true);
@@ -22,6 +50,9 @@ function NewServerModal({ template, onClose, onCreated }) {
         name,
         gameId: template.id,
         ramLimitMb: Number(ramLimitMb),
+        cpuLimitPercent: Number(cpuLimitPercent),
+        diskLimitGb: Number(diskLimitGb),
+        port: port ? Number(port) : undefined,
         fields: fieldValues
       });
       onCreated(server);
@@ -48,8 +79,47 @@ function NewServerModal({ template, onClose, onCreated }) {
           </div>
 
           <div>
-            <label className="field-label">RAM Limit (MB)</label>
-            <input type="number" className="input" value={ramLimitMb} onChange={(e) => setRamLimitMb(e.target.value)} />
+            <label className="field-label">RAM Limit</label>
+            <input
+              type="range"
+              className="w-full"
+              min={512}
+              max={Math.max(totalRamMb, 512)}
+              step={256}
+              value={ramLimitMb}
+              onChange={(e) => setRamLimitMb(e.target.value)}
+            />
+            <p className="text-label text-text-muted mt-1">{ramLimitMb} MB ({(ramLimitMb / 1024).toFixed(1)} GB)</p>
+          </div>
+
+          <div>
+            <label className="field-label">CPU Limit</label>
+            <input
+              type="range"
+              className="w-full"
+              min={0}
+              max={400}
+              step={10}
+              value={cpuLimitPercent}
+              onChange={(e) => setCpuLimitPercent(e.target.value)}
+            />
+            <p className="text-label text-text-muted mt-1">{cpuLimitPercent}% ({(cpuLimitPercent / 100).toFixed(1)} cores equivalent)</p>
+          </div>
+
+          <div>
+            <label className="field-label">Disk Limit (GB)</label>
+            <input type="number" className="input" value={diskLimitGb} onChange={(e) => setDiskLimitGb(e.target.value)} />
+          </div>
+
+          <div>
+            <label className="field-label">Host Port</label>
+            <input
+              type="number"
+              className="input"
+              value={port}
+              onChange={(e) => setPort(e.target.value)}
+              placeholder={`Default: ${primaryPort(template)}`}
+            />
           </div>
 
           <div className="border-t border-hairline pt-4 space-y-4">
@@ -80,6 +150,9 @@ function NewServerModal({ template, onClose, onCreated }) {
                     value={fieldValues[field.envVar] ?? ''}
                     onChange={(e) => setFieldValues((v) => ({ ...v, [field.envVar]: e.target.value }))}
                   />
+                )}
+                {getFieldHelp(template.id, field) && (
+                  <p className="text-label text-text-muted mt-1">{getFieldHelp(template.id, field)}</p>
                 )}
               </div>
             ))}
@@ -154,22 +227,30 @@ export default function Templates() {
         <div className="card p-xl text-center text-text-muted text-caption">No templates match your search.</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md">
-          {filtered.map((template) => (
-            <button
-              key={template.id}
-              onClick={() => setSelected(template)}
-              className="card p-4 text-left hover:border-hairline-strong hover:bg-surface2 transition-colors duration-100 flex flex-col"
-              style={{ minHeight: '120px' }}
-            >
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <span className="text-[13px] text-text-primary" style={{ fontWeight: 590 }}>{template.name}</span>
-                <span className="status-badge bg-surface3 text-text-muted flex-shrink-0">{template.category}</span>
-              </div>
-              {template.installNotes && (
-                <p className="text-caption text-text-muted italic line-clamp-3">{template.installNotes}</p>
-              )}
-            </button>
-          ))}
+          {filtered.map((template) => {
+            const badges = getBadges(template);
+            return (
+              <button
+                key={template.id}
+                onClick={() => setSelected(template)}
+                className="card p-4 text-left hover:border-hairline-strong hover:bg-surface2 transition-colors duration-100 flex flex-col"
+                style={{ minHeight: '100px' }}
+              >
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <span className="text-[13px] text-text-primary" style={{ fontWeight: 590 }}>{template.name}</span>
+                  <div className="flex flex-col gap-1 items-end flex-shrink-0">
+                    <span className="status-badge bg-surface3 text-text-muted">{template.category}</span>
+                    {badges.map((badge) => (
+                      <span key={badge.label} className={`status-badge ${badge.className}`}>{badge.label}</span>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-caption text-text-muted italic line-clamp-3">
+                  {template.installNotes || 'Standard setup, no special requirements.'}
+                </p>
+              </button>
+            );
+          })}
         </div>
       )}
 

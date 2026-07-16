@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Editor from '@monaco-editor/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { api, uploadFile } from '../../lib/api';
 import { useToast } from '../../lib/ToastContext';
 
@@ -64,6 +65,14 @@ export default function Files({ server }) {
     window.open(`/api/servers/${server.id}/files/download?path=${encodeURIComponent(filePath)}`, '_blank');
   }
 
+  function downloadSelectedAsZip() {
+    const params = [...selected]
+      .map((name) => (path ? `${path}/${name}` : name))
+      .map((p) => `paths=${encodeURIComponent(p)}`)
+      .join('&');
+    window.open(`/api/servers/${server.id}/files/download-zip?${params}`, '_blank');
+  }
+
   async function handleFiles(fileList) {
     try {
       for (const file of fileList) {
@@ -104,21 +113,11 @@ export default function Files({ server }) {
         </div>
       </div>
 
-      {selected.size > 0 && (
-        <div className="flex items-center justify-between bg-surface2 border border-hairline-strong rounded-card px-4 py-2 mb-3">
-          <span className="text-caption text-text-secondary">{selected.size} selected</span>
-          <div className="flex gap-2">
-            <button className="btn btn-ghost" onClick={() => setSelected(new Set())}>Clear</button>
-            <button className="btn btn-danger" onClick={deleteSelected}>Delete selected</button>
-          </div>
-        </div>
-      )}
-
       <div className={`card overflow-hidden ${dragOver ? 'border-accent' : ''}`}>
         <table className="w-full text-[13px]">
           <thead>
             <tr className="text-left text-text-secondary border-b border-hairline">
-              <th className="p-2.5 w-8"></th>
+              <th className="p-2.5 w-8" title="Select files for bulk actions"></th>
               <th className="p-2.5 font-normal">Name</th>
               <th className="p-2.5 font-normal">Size</th>
               <th className="p-2.5 font-normal">Modified</th>
@@ -148,7 +147,7 @@ export default function Files({ server }) {
                     <button className="text-text-primary hover:text-accent" onClick={() => openFile(entry.name)}>{entry.name}</button>
                   )}
                 </td>
-                <td className="p-2.5 text-text-secondary">{entry.isDirectory ? '—' : `${Math.ceil(entry.sizeBytes / 1024)} KB`}</td>
+                <td className="p-2.5 text-text-secondary">{entry.isDirectory ? '-' : `${Math.ceil(entry.sizeBytes / 1024)} KB`}</td>
                 <td className="p-2.5 text-text-secondary">{new Date(entry.modifiedAt).toLocaleString()}</td>
                 <td className="p-2.5 text-right">
                   <button className="text-accent text-label" onClick={() => downloadEntry(entry.name)}>Download</button>
@@ -165,6 +164,24 @@ export default function Files({ server }) {
       {uploadProgress !== null && (
         <div className="mt-3 text-caption text-text-secondary">Uploading... {uploadProgress}%</div>
       )}
+
+      <AnimatePresence>
+        {selected.size > 0 && (
+          <motion.div
+            initial={{ y: 40, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 40, opacity: 0 }}
+            transition={{ duration: 0.16, ease: 'easeOut' }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-4 bg-surface2 border border-hairline-strong rounded-card px-4 py-2.5"
+          >
+            <span className="text-caption text-text-secondary">{selected.size} file{selected.size === 1 ? '' : 's'} selected</span>
+            <div className="flex gap-2">
+              <button className="btn btn-secondary" onClick={downloadSelectedAsZip}>Download as ZIP</button>
+              <button className="btn btn-danger" onClick={deleteSelected}>Delete selected</button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {editing && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">

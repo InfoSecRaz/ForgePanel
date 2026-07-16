@@ -8,6 +8,7 @@ const dockerService = require('../services/dockerService');
 const { requireAuth, requirePermission } = require('../auth');
 const { getTemplate } = require('../templates/registry');
 const { logActivity } = require('../services/activityService');
+const { getMaxPlayers } = require('../services/configService');
 
 const router = express.Router();
 
@@ -18,9 +19,19 @@ function serverDirs(serverId) {
   return { base, data: path.join(base, 'data'), mods: path.join(base, 'mods') };
 }
 
+function latestDiskMb(serverId) {
+  const row = db.prepare('SELECT disk_mb FROM resource_history WHERE server_id = ? ORDER BY id DESC LIMIT 1').get(serverId);
+  return row && row.disk_mb != null ? row.disk_mb : null;
+}
+
 function toApiServer(row) {
   const { rcon_password, ...rest } = row;
-  return rest;
+  const template = getTemplate(row.game_id);
+  return {
+    ...rest,
+    maxPlayers: template ? getMaxPlayers(template, serverDirs(row.id).data) : null,
+    diskUsedMb: latestDiskMb(row.id)
+  };
 }
 
 router.get('/', requireAuth, (req, res) => {
@@ -190,6 +201,25 @@ router.get('/:id/status', requireAuth, async (req, res) => {
     }
   }
   res.json({ state: row.state, container: containerState });
+});
+
+router.get('/:id/activity', requireAuth, (req, res) => {
+  const row = db.prepare('SELECT id FROM servers WHERE id = ?').get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Server not found' });
+
+  const rows = db.prepare(
+    'SELECT id, event_type, description, metadata, occurred_at FROM activity_log WHERE server_id = ? ORDER BY occurred_at DESC LIMIT 50'
+  ).all(req.params.id);
+
+  res.json({
+    events: rows.map((r) => ({
+      id: r.id,
+      eventType: r.event_type,
+      description: r.description,
+      metadata: r.metadata ? JSON.parse(r.metadata) : null,
+      occurredAt: r.occurred_at
+    }))
+  });
 });
 
 router.get('/:id/console/history', requireAuth, async (req, res) => {

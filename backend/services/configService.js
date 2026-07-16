@@ -92,4 +92,38 @@ function renderConfig(template, dataPath, providedFields) {
   renderer(template, dataPath, providedFields);
 }
 
-module.exports = { renderConfig };
+// Finds the template field that represents the max-player-count setting (matched by key,
+// since field naming isn't standardized across templates: iniKey "MaxPlayers" for zomboid,
+// propKey "maxplayers" for rust) and, if the rendered config file exists, reads its current
+// value back out rather than assuming the template default is still accurate. Only the
+// line-oriented formats (ini/properties/cfg) are parsed; json falls back to the template
+// default rather than adding a parser for formats no field currently needs.
+function findMaxPlayersField(template) {
+  return (template.fields || []).find((f) => {
+    const key = (f.iniKey || f.propKey || f.jsonKey || f.xmlTag || f.yamlKey || f.envVar || '').toLowerCase();
+    return key.includes('max') && key.includes('player');
+  });
+}
+
+function getMaxPlayers(template, dataPath) {
+  const field = findMaxPlayersField(template);
+  if (!field) return null;
+
+  let value = field.default;
+  const type = template.config && template.config.type;
+  const configFile = template.config && template.config.file;
+
+  if (configFile && ['ini', 'properties', 'txt', 'cfg'].includes(type)) {
+    const configPath = path.join(dataPath, configFile);
+    if (fs.existsSync(configPath)) {
+      const key = field.iniKey || field.propKey || field.envVar;
+      const match = fs.readFileSync(configPath, 'utf8').match(new RegExp(`^${key}\\s*=\\s*(.*)$`, 'm'));
+      if (match) value = match[1].trim();
+    }
+  }
+
+  const num = Number(value);
+  return Number.isFinite(num) ? num : null;
+}
+
+module.exports = { renderConfig, getMaxPlayers };

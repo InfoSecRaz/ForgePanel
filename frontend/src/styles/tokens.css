@@ -43,4 +43,7 @@
   /* Fonts */
   --font-sans: 'Inter Variable', 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  /* Console */
+  --console-text: #d4d4d4;
 }

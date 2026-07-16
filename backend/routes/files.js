@@ -131,6 +131,29 @@ router.get('/download', requireAuth, requirePermission('file_read'), (req, res) 
   }
 });
 
+router.get('/download-zip', requireAuth, requirePermission('file_read'), (req, res) => {
+  const server = getServerOr404(req, res);
+  if (!server) return;
+
+  const paths = [].concat(req.query.paths || []);
+  if (paths.length === 0) return res.status(400).json({ error: 'paths is required' });
+
+  try {
+    const resolved = paths.map((p) => ({ target: resolveSafePath(dataDirFor(server.id), p), name: path.basename(p) }));
+    res.attachment('selected-files.zip');
+    const archive = archiver('zip', { zlib: { level: 9 } });
+    archive.pipe(res);
+    for (const { target, name } of resolved) {
+      const stat = fs.statSync(target);
+      if (stat.isDirectory()) archive.directory(target, name);
+      else archive.file(target, { name });
+    }
+    archive.finalize();
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 router.delete('/', requireAuth, requirePermission('file_write'), (req, res) => {
   const server = getServerOr404(req, res);
   if (!server) return;

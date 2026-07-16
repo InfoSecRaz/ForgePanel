@@ -94,7 +94,7 @@ export default function Console({ server }) {
 
       <div className="flex-1 bg-black border border-hairline rounded-card p-3 overflow-y-auto text-console min-h-[300px]" style={{ fontFamily: 'var(--font-mono)', lineHeight: 1.6 }}>
         {visibleLines.map((l, i) => (
-          <div key={i} className={l.streamType === 'stderr' ? 'text-stopped' : 'text-[#d4d4d4]'}>
+          <div key={i} className={l.streamType === 'stderr' ? 'text-stopped' : ''} style={l.streamType === 'stderr' ? undefined : { color: 'var(--console-text)' }}>
             {showTimestamps && l.timestamp && <span className="text-text-muted mr-2">{new Date(l.timestamp).toLocaleTimeString()}</span>}
             {l.line}
           </div>
@@ -102,7 +102,7 @@ export default function Console({ server }) {
         <div ref={bottomRef} />
       </div>
 
-      <form onSubmit={sendCommand} className="mt-3 flex gap-2 items-center" title={!isRunning ? 'Server must be running to send commands' : undefined}>
+      <form onSubmit={sendCommand} className="mt-3 flex gap-2 items-center">
         <span className="text-accent" style={{ fontFamily: 'var(--font-mono)' }}>&gt;</span>
         <input
           className="input flex-1"
@@ -111,7 +111,14 @@ export default function Console({ server }) {
           value={command}
           disabled={!isRunning}
           onChange={(e) => setCommand(e.target.value)}
+          title={!isRunning ? 'Start the server to send commands.' : undefined}
         />
+        <span
+          className="w-5 h-5 rounded-full bg-surface3 text-text-muted text-label flex items-center justify-center flex-shrink-0 cursor-help"
+          title={'Send commands directly to the server console. Commands vary by game. Common PZ commands: save, quit, players, kickuser [name], banuser [name]'}
+        >
+          ?
+        </span>
         <button type="submit" className="btn btn-primary" disabled={!isRunning}>Send</button>
       </form>
     </div>

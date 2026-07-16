@@ -31,7 +31,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-canvas">
+    <div className="min-h-screen flex items-center justify-center login-bg">
       <form onSubmit={handleSubmit} className="card p-6 w-full max-w-sm space-y-4">
         <h1 className="text-section-head text-text-primary text-center mb-2">ForgePanel</h1>
 

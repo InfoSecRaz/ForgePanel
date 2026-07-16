@@ -45,6 +45,7 @@ export default function Tunnel({ server }) {
       <div className="card p-4">
         <p className="text-caption text-text-secondary mb-4">
           playit.gg creates a public address for your server so players can connect without port forwarding. Free. Requires one-time setup in Settings.
+          Players do not need to install anything to connect through a playit.gg tunnel.
         </p>
 
         <div className="flex items-center justify-between mb-3">
@@ -64,8 +65,8 @@ export default function Tunnel({ server }) {
             ) : (
               <p className="text-text-secondary text-caption">
                 Tunnel enabled. Assign a tunnel to this server's port on the{' '}
-                <a href="https://playit.gg/account/tunnels" target="_blank" rel="noreferrer" className="text-accent">playit.gg dashboard</a>{' '}
-                — ForgePanel will pick up the public address automatically once it's live.
+                <a href="https://playit.gg/account/tunnels" target="_blank" rel="noreferrer" className="text-accent">playit.gg dashboard</a>.{' '}
+                ForgePanel will pick up the public address automatically once it's live.
               </p>
             )}
             <p className="text-label text-text-muted">

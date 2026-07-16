@@ -62,6 +62,9 @@ export default function Backups({ server }) {
         <div>
           <h2 className="text-section-head text-text-primary">Backups</h2>
           <p className="text-label text-text-muted mt-1">Free tier: last 10 backups retained.</p>
+          <p className="text-label text-text-muted mt-1">
+            Backups are created while the server is running. A save command is sent before each backup starts to ensure data consistency.
+          </p>
         </div>
         <button className="btn btn-primary" disabled={busy} onClick={createBackup}>
           {busy ? 'Backing up...' : 'Create Backup'}

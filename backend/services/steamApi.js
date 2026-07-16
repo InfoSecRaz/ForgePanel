@@ -52,6 +52,30 @@ function postForm(endpoint, params) {
   });
 }
 
+// GetPlayerSummaries resolves SteamID64s (QueryFiles only returns each item's numeric
+// "creator" ID, not a display name) to persona names. Best-effort: search results are still
+// useful without author names, so a failure here just leaves authors blank rather than
+// failing the whole search.
+async function getPlayerNames(steamIds) {
+  const apiKey = getApiKey();
+  const unique = [...new Set(steamIds.filter(Boolean))];
+  if (!apiKey || unique.length === 0) return {};
+
+  try {
+    const result = await getRequest('/ISteamUser/GetPlayerSummaries/v2/', {
+      key: apiKey,
+      steamids: unique.join(',')
+    });
+    const names = {};
+    for (const player of (result.response && result.response.players) || []) {
+      names[player.steamid] = player.personaname;
+    }
+    return names;
+  } catch (err) {
+    return {};
+  }
+}
+
 async function searchWorkshop(appid, query, page = 1) {
   const apiKey = getApiKey();
   if (!apiKey) throw new Error('Steam API key is not configured. Set it in Settings.');
@@ -67,13 +91,18 @@ async function searchWorkshop(appid, query, page = 1) {
     return_previews: true
   });
 
-  return (result.response.publishedfiledetails || []).map((item) => ({
+  const items = result.response.publishedfiledetails || [];
+  const authorNames = await getPlayerNames(items.map((item) => item.creator));
+
+  return items.map((item) => ({
     id: item.publishedfileid,
     title: item.title,
     description: item.short_description,
     thumbnailUrl: item.preview_url,
     fileType: item.file_type,
-    subscriptions: item.subscriptions
+    subscriptions: item.subscriptions,
+    timeUpdated: item.time_updated,
+    author: authorNames[item.creator] || null
   }));
 }
 

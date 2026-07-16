@@ -116,9 +116,15 @@ body {
   color: var(--text-muted);
 }
 .input:focus {
-  outline: none;
+  outline: 2px solid var(--accent);
+  outline-offset: 0px;
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--focus-ring) !important;
+}
+
+.login-bg {
+  background-color: var(--canvas);
+  background-image: radial-gradient(rgba(35, 37, 42, 0.4) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
 .field-label {

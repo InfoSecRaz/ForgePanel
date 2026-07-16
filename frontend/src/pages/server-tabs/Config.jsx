@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import Editor from '@monaco-editor/react';
 import { api } from '../../lib/api';
 import { useToast } from '../../lib/ToastContext';
+import { getFieldHelp } from '../../lib/fieldHelp';
 
 export default function Config({ server }) {
   const [data, setData] = useState(null);
@@ -92,6 +93,9 @@ export default function Config({ server }) {
                       value={values[field.envVar] ?? ''}
                       onChange={(e) => setValues((v) => ({ ...v, [field.envVar]: e.target.value }))}
                     />
+                  )}
+                  {getFieldHelp(server.game_id, field) && (
+                    <p className="text-label text-text-muted mt-1">{getFieldHelp(server.game_id, field)}</p>
                   )}
                 </div>
               ))}

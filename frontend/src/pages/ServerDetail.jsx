@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate, NavLink, Routes, Route, Navigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, NavLink, Routes, Route, Navigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { getSocket } from '../lib/socket';
 import { useToast } from '../lib/ToastContext';
 import StatusBadge from '../components/StatusBadge';
 import ConfirmModal from '../components/ConfirmModal';
+import PageTransition from '../components/PageTransition';
 import Overview from './server-tabs/Overview';
 import Console from './server-tabs/Console';
 import Files from './server-tabs/Files';
@@ -32,6 +33,7 @@ const TABS = [
 export default function ServerDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [server, setServer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionBusy, setActionBusy] = useState(false);
@@ -130,16 +132,18 @@ export default function ServerDetail() {
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        <Routes>
-          {TABS.map((tab) => (
-            <Route
-              key={tab.path}
-              path={tab.path}
-              element={<tab.component server={server} onServerUpdate={refresh} />}
-            />
-          ))}
-          <Route path="*" element={<Navigate to={`/servers/${id}`} replace />} />
-        </Routes>
+        <PageTransition key={location.pathname}>
+          <Routes>
+            {TABS.map((tab) => (
+              <Route
+                key={tab.path}
+                path={tab.path}
+                element={<tab.component server={server} onServerUpdate={refresh} />}
+              />
+            ))}
+            <Route path="*" element={<Navigate to={`/servers/${id}`} replace />} />
+          </Routes>
+        </PageTransition>
       </div>
 
       {deleteOpen && (

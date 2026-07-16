@@ -3,9 +3,11 @@ import { api } from '../../lib/api';
 import { getSocket } from '../../lib/socket';
 import { useToast } from '../../lib/ToastContext';
 import ConfirmModal from '../../components/ConfirmModal';
+import { formatDateTime } from '../../lib/format';
 
 export default function Players({ server }) {
   const [online, setOnline] = useState([]);
+  const [history, setHistory] = useState([]);
   const [banTarget, setBanTarget] = useState(null);
   const toast = useToast();
 
@@ -13,14 +15,20 @@ export default function Players({ server }) {
     api.get(`/servers/${server.id}/players`).then((data) => setOnline(data.online)).catch((err) => toast.error(err.message));
   }
 
+  function loadHistory() {
+    api.get(`/servers/${server.id}/players/history`).then(setHistory).catch(() => {});
+  }
+
   useEffect(() => {
     load();
+    loadHistory();
     const socket = getSocket();
-    socket.on('player:join', load);
-    socket.on('player:leave', load);
+    const onChange = () => { load(); loadHistory(); };
+    socket.on('player:join', onChange);
+    socket.on('player:leave', onChange);
     return () => {
-      socket.off('player:join', load);
-      socket.off('player:leave', load);
+      socket.off('player:join', onChange);
+      socket.off('player:leave', onChange);
     };
   }, [server.id]);
 
@@ -67,6 +75,31 @@ export default function Players({ server }) {
           </tbody>
         </table>
         {online.length === 0 && <p className="p-6 text-center text-text-muted text-caption">No players online.</p>}
+      </div>
+
+      <div className="mt-lg">
+        <h2 className="text-section-head text-text-primary mb-3">Recent Players</h2>
+        <div className="card overflow-hidden">
+          <table className="w-full text-[13px]">
+            <thead>
+              <tr className="text-left text-text-secondary border-b border-hairline">
+                <th className="p-3 font-normal">Player Name</th>
+                <th className="p-3 font-normal">Last Seen</th>
+                <th className="p-3 font-normal">Total Sessions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {history.map((h) => (
+                <tr key={h.playerName} className="border-b border-hairline last:border-0">
+                  <td className="p-3 text-text-primary">{h.playerName}</td>
+                  <td className="p-3 text-text-secondary">{formatDateTime(h.lastSeen)}</td>
+                  <td className="p-3 text-text-secondary">{h.sessions}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {history.length === 0 && <p className="p-6 text-center text-text-muted text-caption">No player history yet.</p>}
+        </div>
       </div>
 
       {banTarget && (

@@ -40,6 +40,16 @@ router.put('/:id', requireAdmin, (req, res) => {
 });
 
 router.delete('/:id', requireAdmin, (req, res) => {
+  const user = db.prepare('SELECT is_admin FROM users WHERE id = ?').get(req.params.id);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+
+  if (user.is_admin) {
+    const { count } = db.prepare('SELECT COUNT(*) as count FROM users WHERE is_admin = 1').get();
+    if (count === 1) {
+      return res.status(403).json({ error: 'Cannot delete the only admin account. Create another admin first.' });
+    }
+  }
+
   db.prepare('DELETE FROM users WHERE id = ?').run(req.params.id);
   res.json({ ok: true });
 });

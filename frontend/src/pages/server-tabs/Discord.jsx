@@ -37,7 +37,7 @@ export default function Discord({ server, onServerUpdate }) {
       <div className="card p-4 space-y-4">
         <h2 className="card-title">Discord Integration</h2>
         <p className="text-caption text-text-secondary -mt-2">
-          Set up the bot itself in <Link to="/settings" className="text-accent">Settings → Discord</Link>. Once it's connected, configure this server's notifications below.
+          Set up the bot itself in <Link to="/settings" className="text-accent">the Discord section in Settings</Link>. Once it's connected, configure this server's notifications below.
         </p>
 
         <div>

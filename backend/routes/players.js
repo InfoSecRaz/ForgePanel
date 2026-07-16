@@ -14,6 +14,22 @@ router.get('/', requireAuth, (req, res) => {
   res.json({ online: playerService.getOnlinePlayers(server.id) });
 });
 
+router.get('/history', requireAuth, (req, res) => {
+  const server = db.prepare('SELECT * FROM servers WHERE id = ?').get(req.params.id);
+  if (!server) return res.status(404).json({ error: 'Server not found' });
+
+  const rows = db.prepare(`
+    SELECT player_name, MAX(occurred_at) as last_seen, COUNT(*) as sessions
+    FROM player_history
+    WHERE server_id = ? AND event = 'join'
+    GROUP BY player_name
+    ORDER BY last_seen DESC
+    LIMIT 20
+  `).all(req.params.id);
+
+  res.json(rows.map((r) => ({ playerName: r.player_name, lastSeen: r.last_seen, sessions: r.sessions })));
+});
+
 router.post('/:name/kick', requireAuth, requirePermission('start_stop'), async (req, res) => {
   const server = db.prepare('SELECT * FROM servers WHERE id = ?').get(req.params.id);
   if (!server) return res.status(404).json({ error: 'Server not found' });
