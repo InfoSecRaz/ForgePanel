@@ -21,7 +21,7 @@
     { "envVar": "SERVER_NAME", "label": "Server Name", "type": "text", "default": "ForgePanel Satisfactory Server" },
     { "envVar": "ADMIN_PASSWORD", "label": "Admin Password", "type": "password", "default": "" },
     { "envVar": "SERVER_PASSWORD", "label": "Server Password", "type": "password", "default": "" },
-    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 4 },
+    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 4 , "requiresRestart": true },
     { "envVar": "AUTOSAVE_INTERVAL", "label": "Autosave Interval (seconds)", "type": "number", "default": 300 }
   ]
 }

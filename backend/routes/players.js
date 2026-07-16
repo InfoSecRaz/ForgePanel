@@ -4,7 +4,7 @@ const { requireAuth, requirePermission } = require('../auth');
 const dockerService = require('../services/dockerService');
 const playerService = require('../services/playerService');
 const { getTemplate } = require('../templates/registry');
-const { logActivity } = require('../services/activityService');
+const { logActivity, actorFromReq } = require('../services/activityService');
 
 const router = express.Router({ mergeParams: true });
 
@@ -40,7 +40,10 @@ router.post('/:name/kick', requireAuth, requirePermission('start_stop'), async (
       ? template.kickCommand.replace('{player}', req.params.name)
       : `kick ${req.params.name}`;
     await dockerService.sendCommand(server.container_id, command);
-    logActivity(server.id, 'player_kicked', `Kicked ${req.params.name}`);
+    {
+      const { userId, ipAddress } = actorFromReq(req);
+      logActivity(server.id, 'player_kicked', `Kicked ${req.params.name}`, null, userId, ipAddress);
+    }
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -57,7 +60,10 @@ router.post('/:name/ban', requireAuth, requirePermission('start_stop'), async (r
       ? template.banCommand.replace('{player}', req.params.name)
       : `ban ${req.params.name}`;
     await dockerService.sendCommand(server.container_id, command);
-    logActivity(server.id, 'player_banned', `Banned ${req.params.name}`);
+    {
+      const { userId, ipAddress } = actorFromReq(req);
+      logActivity(server.id, 'player_banned', `Banned ${req.params.name}`, null, userId, ipAddress);
+    }
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

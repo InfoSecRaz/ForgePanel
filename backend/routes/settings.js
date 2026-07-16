@@ -4,6 +4,7 @@ const { execSync } = require('child_process');
 const db = require('../db/db');
 const { requireAdmin, requireAuth } = require('../auth');
 const playitService = require('../services/playitService');
+const { getTier } = require('../services/resourceService');
 
 const router = express.Router();
 
@@ -21,7 +22,8 @@ function getHostCapacity() {
   return {
     totalRamMb: Math.round(os.totalmem() / (1024 * 1024)),
     cpuCores: os.cpus().length,
-    totalDiskGb
+    totalDiskGb,
+    tier: getTier()
   };
 }
 

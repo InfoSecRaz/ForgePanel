@@ -3,6 +3,39 @@ import Editor from '@monaco-editor/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api, uploadFile } from '../../lib/api';
 import { useToast } from '../../lib/ToastContext';
+import { useAuth } from '../../lib/AuthContext';
+
+function SftpDetails({ server }) {
+  const { user } = useAuth();
+  const sftpUsername = `${user?.username || ''}.${server.id.slice(0, 8)}`;
+
+  return (
+    <div className="card p-4 mb-4 space-y-3">
+      <h2 className="card-title mb-0">SFTP Access</h2>
+      <div className="grid grid-cols-3 gap-md text-[13px]">
+        <div>
+          <div className="text-label text-text-muted">Host</div>
+          <div className="text-text-primary" style={{ fontFamily: 'var(--font-mono)' }}>{window.location.hostname}</div>
+        </div>
+        <div>
+          <div className="text-label text-text-muted">Port</div>
+          <div className="text-text-primary" style={{ fontFamily: 'var(--font-mono)' }}>2223</div>
+        </div>
+        <div>
+          <div className="text-label text-text-muted">Username</div>
+          <div className="text-text-primary" style={{ fontFamily: 'var(--font-mono)' }}>{sftpUsername}</div>
+        </div>
+      </div>
+      <div
+        className="flex items-center gap-2 rounded-[6px] px-3.5 py-2.5 text-[13px] text-accent"
+        style={{ background: 'rgba(94, 106, 210, 0.1)', border: '0.5px solid rgba(94, 106, 210, 0.3)' }}
+      >
+        <span className="w-4 h-4 rounded-full border border-accent flex items-center justify-center flex-shrink-0 text-[10px]">i</span>
+        Your SFTP password is the same as your ForgePanel login password.
+      </div>
+    </div>
+  );
+}
 
 export default function Files({ server }) {
   const [path, setPath] = useState('');
@@ -97,6 +130,8 @@ export default function Files({ server }) {
       onDragLeave={() => setDragOver(false)}
       onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files); }}
     >
+      <SftpDetails server={server} />
+
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-1 text-[13px]">
           <button className="text-accent" onClick={() => setPath('')}>root</button>

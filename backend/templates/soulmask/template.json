@@ -18,7 +18,7 @@
   "defaultRamMb": 8192,
   "fields": [
     { "envVar": "SERVER_NAME", "label": "Server Name", "type": "text", "default": "ForgePanel Soulmask Server", "iniKey": "SteamServerName", "iniSection": "GameSettings" },
-    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 30, "iniKey": "max_players", "iniSection": "GameSettings" },
+    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 30, "iniKey": "max_players", "iniSection": "GameSettings" , "requiresRestart": true },
     { "envVar": "PASSWORD", "label": "Password", "type": "password", "default": "", "iniKey": "PSW", "iniSection": "GameSettings" },
     { "envVar": "ADMIN_PASSWORD", "label": "Admin Password", "type": "password", "default": "", "iniKey": "adminpsw", "iniSection": "GameSettings" },
     { "envVar": "PVP", "label": "PVP", "type": "bool", "default": true, "iniKey": "pvp", "iniSection": "GameSettings" },

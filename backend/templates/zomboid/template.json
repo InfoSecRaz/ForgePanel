@@ -29,7 +29,7 @@
     { "envVar": "ADMIN_USER", "label": "Admin Username", "type": "text", "default": "admin", "iniKey": "AdminUsername", "iniSection": "General" },
     { "envVar": "ADMIN_PASSWORD", "label": "Admin Password", "type": "password", "default": "", "iniKey": "AdminPassword", "iniSection": "General" },
     { "envVar": "SERVER_PASSWORD", "label": "Server Password", "type": "password", "default": "", "iniKey": "Password", "iniSection": "General" },
-    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 16, "iniKey": "MaxPlayers", "iniSection": "General" },
+    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 16, "iniKey": "MaxPlayers", "iniSection": "General" , "requiresRestart": true },
     { "envVar": "PVP", "label": "PVP", "type": "bool", "default": true, "iniKey": "PVP", "iniSection": "General" },
     { "envVar": "PAUSE_EMPTY", "label": "Pause when empty", "type": "bool", "default": true, "iniKey": "PauseEmpty", "iniSection": "General" }
   ]

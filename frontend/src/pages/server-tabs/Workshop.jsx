@@ -105,7 +105,7 @@ export default function Workshop({ server }) {
       <div className="card p-4">
         <h2 className="card-title">Installed Mods ({installed.length})</h2>
         {installed.length === 0 ? (
-          <p className="text-text-muted text-caption">No mods installed</p>
+          <p className="text-text-muted text-caption">No mods installed yet. Use Search Workshop below to find and install mods.</p>
         ) : (
           <ul className="space-y-2">
             {installed.map((mod) => (

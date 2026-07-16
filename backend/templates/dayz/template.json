@@ -21,7 +21,7 @@
     { "envVar": "HOSTNAME", "label": "Hostname", "type": "text", "default": "ForgePanel DayZ Server", "propKey": "hostname" },
     { "envVar": "PASSWORD", "label": "Password", "type": "password", "default": "", "propKey": "password" },
     { "envVar": "ADMIN_PASSWORD", "label": "Admin Password", "type": "password", "default": "", "propKey": "passwordAdmin" },
-    { "envVar": "MAXPLAYERS", "label": "Max Players", "type": "number", "default": 60, "propKey": "maxPlayers" },
+    { "envVar": "MAXPLAYERS", "label": "Max Players", "type": "number", "default": 60, "propKey": "maxPlayers" , "requiresRestart": true },
     { "envVar": "TEMPLATE", "label": "Map Template", "type": "select", "options": ["dayzOffline.chernarusplus", "dayzOffline.enoch"], "default": "dayzOffline.chernarusplus", "propKey": "template" },
     { "envVar": "DISABLE_THIRD_PERSON", "label": "Disable 3rd Person", "type": "bool", "default": false, "propKey": "disableThirdPerson" },
     { "envVar": "FORCE_THIRD_PERSON", "label": "Force 3rd Person", "type": "bool", "default": false, "propKey": "forceThirdPerson" }

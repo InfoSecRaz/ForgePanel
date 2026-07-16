@@ -15,7 +15,7 @@
   "fields": [
     { "envVar": "WORLD", "label": "World File", "type": "text", "default": "world1.wld", "propKey": "world" },
     { "envVar": "WORLDNAME", "label": "World Name", "type": "text", "default": "ForgePanel World", "propKey": "worldname" },
-    { "envVar": "MAXPLAYERS", "label": "Max Players", "type": "number", "default": 8, "propKey": "maxplayers" },
+    { "envVar": "MAXPLAYERS", "label": "Max Players", "type": "number", "default": 8, "propKey": "maxplayers" , "requiresRestart": true },
     { "envVar": "PASSWORD", "label": "Password", "type": "password", "default": "", "propKey": "password" },
     { "envVar": "MOTD", "label": "MOTD", "type": "text", "default": "Welcome to ForgePanel Terraria!", "propKey": "motd" },
     { "envVar": "AUTOCREATE", "label": "World Size", "type": "select", "options": ["1", "2", "3"], "default": "2", "propKey": "autocreate" },

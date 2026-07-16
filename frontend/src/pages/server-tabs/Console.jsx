@@ -9,13 +9,53 @@ const CONNECTION_STYLES = {
   reconnecting: { label: 'Reconnecting...', color: 'text-warning', dot: 'bg-warning animate-pulseDot' }
 };
 
+const ANSI_PATTERN = /\x1b\[[0-9;]*m/;
+const ERROR_PATTERN = /ERROR|FATAL|Exception|Traceback|SEVERE|\[ERROR\]/;
+const WARN_PATTERN = /WARN|WARNING|\[WARN\]|deprecated/i;
+const SUCCESS_PATTERN = /\bDone\b|SUCCESS|started successfully|\bready\b/i;
+const SYSTEM_PATTERN = /^\[ForgePanel\]/;
+
+// ANSI escape codes take priority: a line the game process already colored itself is left
+// alone rather than overridden by our pattern-based severity guess.
+function severityClass(line, streamType) {
+  if (ANSI_PATTERN.test(line)) return null;
+  if (streamType === 'stderr' || ERROR_PATTERN.test(line)) return 'text-stopped';
+  if (SYSTEM_PATTERN.test(line)) return 'text-accent';
+  if (WARN_PATTERN.test(line)) return 'text-warning';
+  if (SUCCESS_PATTERN.test(line)) return 'text-running';
+  return null;
+}
+
+function Sparkline({ data, color }) {
+  const width = 120;
+  const height = 40;
+  if (data.length < 2) return <svg width={width} height={height} />;
+
+  const max = Math.max(...data, 1);
+  const min = Math.min(...data, 0);
+  const range = max - min || 1;
+  const points = data
+    .map((v, i) => `${(i / (data.length - 1)) * width},${height - ((v - min) / range) * height}`)
+    .join(' ');
+
+  return (
+    <svg width={width} height={height}>
+      <polyline points={points} fill="none" stroke={color} strokeWidth="1.5" />
+    </svg>
+  );
+}
+
 export default function Console({ server }) {
   const [lines, setLines] = useState([]);
   const [command, setCommand] = useState('');
   const [filter, setFilter] = useState('');
   const [showTimestamps, setShowTimestamps] = useState(false);
   const [connection, setConnection] = useState('connected');
+  const [cpuHistory, setCpuHistory] = useState([]);
+  const [ramHistory, setRamHistory] = useState([]);
+  const [netHistory, setNetHistory] = useState([]);
   const bottomRef = useRef(null);
+  const netPrevRef = useRef(null);
   const toast = useToast();
   const isRunning = server.state === 'running';
 
@@ -36,11 +76,27 @@ export default function Console({ server }) {
     const onConnect = () => setConnection('connected');
     const onDisconnect = () => setConnection('disconnected');
     const onReconnectAttempt = () => setConnection('reconnecting');
+    const onStats = ({ serverId, cpu, ram, network_rx, network_tx }) => {
+      if (serverId !== server.id) return;
+      setCpuHistory((prev) => [...prev.slice(-29), cpu ?? 0]);
+      setRamHistory((prev) => [...prev.slice(-29), ram ?? 0]);
+
+      const now = Date.now();
+      const prevNet = netPrevRef.current;
+      let rate = 0;
+      if (prevNet && now > prevNet.t) {
+        const dtSeconds = (now - prevNet.t) / 1000;
+        rate = Math.max(0, ((network_rx ?? 0) - prevNet.rx + ((network_tx ?? 0) - prevNet.tx)) / dtSeconds);
+      }
+      netPrevRef.current = { rx: network_rx ?? 0, tx: network_tx ?? 0, t: now };
+      setNetHistory((prev) => [...prev.slice(-29), rate]);
+    };
 
     socket.on('console:output', onOutput);
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
     socket.io.on('reconnect_attempt', onReconnectAttempt);
+    socket.on('stats:update', onStats);
 
     setConnection(socket.connected ? 'connected' : 'disconnected');
 
@@ -50,6 +106,7 @@ export default function Console({ server }) {
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
       socket.io.off('reconnect_attempt', onReconnectAttempt);
+      socket.off('stats:update', onStats);
     };
   }, [server.id]);
 
@@ -93,13 +150,31 @@ export default function Console({ server }) {
       </div>
 
       <div className="flex-1 bg-black border border-hairline rounded-card p-3 overflow-y-auto text-console min-h-[300px]" style={{ fontFamily: 'var(--font-mono)', lineHeight: 1.6 }}>
-        {visibleLines.map((l, i) => (
-          <div key={i} className={l.streamType === 'stderr' ? 'text-stopped' : ''} style={l.streamType === 'stderr' ? undefined : { color: 'var(--console-text)' }}>
-            {showTimestamps && l.timestamp && <span className="text-text-muted mr-2">{new Date(l.timestamp).toLocaleTimeString()}</span>}
-            {l.line}
-          </div>
-        ))}
+        {visibleLines.map((l, i) => {
+          const cls = severityClass(l.line, l.streamType);
+          return (
+            <div key={i} className={cls || ''} style={cls ? undefined : { color: 'var(--console-text)' }}>
+              {showTimestamps && l.timestamp && <span className="text-text-muted mr-2">{new Date(l.timestamp).toLocaleTimeString()}</span>}
+              {l.line}
+            </div>
+          );
+        })}
         <div ref={bottomRef} />
+      </div>
+
+      <div className="flex items-center gap-6 mt-3 px-1">
+        <div>
+          <p className="text-label text-text-muted mb-1">CPU {cpuHistory.length ? `${Math.round(cpuHistory[cpuHistory.length - 1])}%` : '-'}</p>
+          <Sparkline data={cpuHistory} color="#5e6ad2" />
+        </div>
+        <div>
+          <p className="text-label text-text-muted mb-1">RAM {ramHistory.length ? `${Math.round(ramHistory[ramHistory.length - 1])} MB` : '-'}</p>
+          <Sparkline data={ramHistory} color="#27a644" />
+        </div>
+        <div>
+          <p className="text-label text-text-muted mb-1">NET {netHistory.length ? `${netHistory[netHistory.length - 1].toFixed(2)} MB/s` : '-'}</p>
+          <Sparkline data={netHistory} color="#02b8cc" />
+        </div>
       </div>
 
       <form onSubmit={sendCommand} className="mt-3 flex gap-2 items-center">

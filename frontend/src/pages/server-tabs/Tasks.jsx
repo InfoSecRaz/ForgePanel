@@ -1,9 +1,27 @@
 import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../../lib/api';
 import { useToast } from '../../lib/ToastContext';
 import ConfirmModal from '../../components/ConfirmModal';
 
 const TYPES = ['restart', 'backup', 'command', 'update_check'];
+
+const CRON_EXAMPLES = [
+  ['* * * * *', 'Every minute'],
+  ['*/5 * * * *', 'Every 5 minutes'],
+  ['0 * * * *', 'Every hour'],
+  ['0 */6 * * *', 'Every 6 hours'],
+  ['0 2 * * *', 'Every day at 2am'],
+  ['0 2 * * 0', 'Every Sunday at 2am'],
+  ['0 2 1 * *', '1st of every month at 2am']
+];
+
+const CRON_SPECIAL_CHARS = [
+  ['*', 'Any value'],
+  [',', 'Value list separator (1,3,5)'],
+  ['-', 'Range of values (1-5)'],
+  ['/', 'Step values (*/5)']
+];
 
 export default function Tasks({ server }) {
   const [tasks, setTasks] = useState([]);
@@ -13,6 +31,7 @@ export default function Tasks({ server }) {
   const [cronExpression, setCronExpression] = useState('0 4 * * *');
   const [command, setCommand] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [showCheatsheet, setShowCheatsheet] = useState(false);
   const toast = useToast();
 
   function load() {
@@ -72,6 +91,48 @@ export default function Tasks({ server }) {
             {TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
           <input className="input" placeholder="Cron expression (e.g. 0 4 * * *)" value={cronExpression} onChange={(e) => setCronExpression(e.target.value)} />
+
+          <button
+            type="button"
+            className="text-label text-text-muted hover:text-text-secondary"
+            onClick={() => setShowCheatsheet((v) => !v)}
+          >
+            {showCheatsheet ? 'Hide cron reference' : 'Show cron reference'}
+          </button>
+
+          <AnimatePresence initial={false}>
+            {showCheatsheet && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.16, ease: 'easeOut' }}
+                style={{ overflow: 'hidden' }}
+              >
+                <div className="bg-surface2 border border-hairline rounded-card p-3 grid grid-cols-2 gap-4 text-[12px]">
+                  <div className="space-y-1">
+                    <p className="text-text-muted mb-1" style={{ fontWeight: 590 }}>Examples</p>
+                    {CRON_EXAMPLES.map(([expr, desc]) => (
+                      <div key={expr} className="flex justify-between gap-3">
+                        <span className="text-text-primary" style={{ fontFamily: 'var(--font-mono)' }}>{expr}</span>
+                        <span className="text-text-secondary text-right">{desc}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-text-muted mb-1" style={{ fontWeight: 590 }}>Special characters</p>
+                    {CRON_SPECIAL_CHARS.map(([char, desc]) => (
+                      <div key={char} className="flex gap-3">
+                        <span className="text-text-primary w-4" style={{ fontFamily: 'var(--font-mono)' }}>{char}</span>
+                        <span className="text-text-secondary">{desc}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {type === 'command' && (
             <input className="input" placeholder="Command to send" value={command} onChange={(e) => setCommand(e.target.value)} />
           )}
@@ -109,10 +170,9 @@ export default function Tasks({ server }) {
           </tbody>
         </table>
         {tasks.length === 0 && (
-          <div className="p-6 text-center text-text-muted text-caption space-y-2">
-            <p>No scheduled tasks yet.</p>
-            <p>You can schedule: automatic restarts, backups, custom commands, and update checks, all on a cron schedule you define.</p>
-          </div>
+          <p className="p-6 text-center text-text-muted text-caption">
+            No scheduled tasks yet. You can schedule automatic restarts, backups, custom commands, and update checks on any cron schedule.
+          </p>
         )}
       </div>
 

@@ -17,7 +17,7 @@
   "fields": [
     { "envVar": "HOSTNAME", "label": "Hostname", "type": "text", "default": "ForgePanel L4D2 Server", "propKey": "hostname" },
     { "envVar": "RCON_PASSWORD", "label": "RCON Password", "type": "password", "default": "", "propKey": "rcon_password" },
-    { "envVar": "MAXPLAYERS", "label": "Max Players", "type": "number", "default": 8, "propKey": "maxplayers" },
+    { "envVar": "MAXPLAYERS", "label": "Max Players", "type": "number", "default": 8, "propKey": "maxplayers" , "requiresRestart": true },
     { "envVar": "MAP", "label": "Map", "type": "text", "default": "c1m1_hotel", "propKey": "map" },
     { "envVar": "SV_LAN", "label": "LAN Only", "type": "bool", "default": false, "propKey": "sv_lan" }
   ]

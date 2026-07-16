@@ -1,10 +1,80 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
 import { getSocket } from '../lib/socket';
 import { useToast } from '../lib/ToastContext';
 import StatusBadge from '../components/StatusBadge';
 import { formatUptime } from '../lib/format';
+
+const BUSY_STATES = ['starting', 'stopping', 'installing', 'restarting'];
+
+function QuickActions({ server }) {
+  const [confirming, setConfirming] = useState(null);
+  const timeoutRef = useRef(null);
+  const toast = useToast();
+
+  useEffect(() => () => clearTimeout(timeoutRef.current), []);
+
+  async function runAction(action) {
+    clearTimeout(timeoutRef.current);
+    setConfirming(null);
+    try {
+      await api.post(`/servers/${server.id}/${action}`);
+    } catch (err) {
+      toast.error(err.message);
+    }
+  }
+
+  function handleStart(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    toast.success(`Starting ${server.name}...`);
+    runAction('start');
+  }
+
+  function requestConfirm(e, action) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (confirming === action) {
+      runAction(action);
+      return;
+    }
+    setConfirming(action);
+    clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => setConfirming(null), 2000);
+  }
+
+  if (BUSY_STATES.includes(server.state)) {
+    return (
+      <button
+        className="btn btn-secondary"
+        disabled
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+      >
+        <span className="inline-block w-3 h-3 border-2 border-text-muted border-t-transparent rounded-full animate-spin" />
+      </button>
+    );
+  }
+
+  if (['stopped', 'crashed'].includes(server.state)) {
+    return <button className="btn btn-primary" onClick={handleStart}>Start</button>;
+  }
+
+  if (server.state === 'running') {
+    return (
+      <div className="flex gap-2">
+        <button className="btn btn-secondary" onClick={(e) => requestConfirm(e, 'restart')}>
+          {confirming === 'restart' ? 'Confirm restart?' : 'Restart'}
+        </button>
+        <button className="btn btn-danger" onClick={(e) => requestConfirm(e, 'stop')}>
+          {confirming === 'stop' ? 'Confirm stop?' : 'Stop'}
+        </button>
+      </div>
+    );
+  }
+
+  return null;
+}
 
 function MiniBar({ percent, color }) {
   return (
@@ -64,6 +134,10 @@ function ServerCard({ server }) {
         <span>{playerCount} / {server.maxPlayers ?? '?'} players</span>
         <span>{formatUptime(server)}</span>
         <span>Port {server.port}</span>
+      </div>
+
+      <div className="pt-1">
+        <QuickActions server={server} />
       </div>
     </Link>
   );

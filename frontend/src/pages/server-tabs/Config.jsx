@@ -3,6 +3,8 @@ import Editor from '@monaco-editor/react';
 import { api } from '../../lib/api';
 import { useToast } from '../../lib/ToastContext';
 import { getFieldHelp } from '../../lib/fieldHelp';
+import PasswordInput from '../../components/PasswordInput';
+import FieldBadges from '../../components/FieldBadges';
 
 export default function Config({ server }) {
   const [data, setData] = useState(null);
@@ -70,8 +72,13 @@ export default function Config({ server }) {
             <div className="grid grid-cols-2 gap-md">
               {fields.map((field) => (
                 <div key={field.envVar}>
-                  <label className="field-label">{field.label}</label>
-                  {field.type === 'bool' ? (
+                  <label className="field-label">
+                    {field.label}
+                    <FieldBadges field={field} />
+                  </label>
+                  {field.readonly ? (
+                    <p className="text-[13px] text-text-secondary py-1.5">{String(values[field.envVar] ?? field.default ?? '')}</p>
+                  ) : field.type === 'bool' ? (
                     <input
                       type="checkbox"
                       checked={!!values[field.envVar]}
@@ -85,11 +92,15 @@ export default function Config({ server }) {
                     >
                       {(field.options || []).map((opt) => <option key={opt} value={opt}>{opt}</option>)}
                     </select>
+                  ) : field.type === 'password' ? (
+                    <PasswordInput
+                      value={values[field.envVar] ?? ''}
+                      onChange={(e) => setValues((v) => ({ ...v, [field.envVar]: e.target.value }))}
+                    />
                   ) : (
                     <input
-                      type={field.type === 'password' ? 'password' : field.type === 'number' ? 'number' : 'text'}
+                      type={field.type === 'number' ? 'number' : 'text'}
                       className="input"
-                      autoComplete={field.type === 'password' ? 'off' : undefined}
                       value={values[field.envVar] ?? ''}
                       onChange={(e) => setValues((v) => ({ ...v, [field.envVar]: e.target.value }))}
                     />

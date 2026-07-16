@@ -16,7 +16,7 @@
   "fields": [
     { "envVar": "NAME", "label": "Server Name", "type": "text", "default": "ForgePanel Barotrauma Server", "xmlTag": "name" },
     { "envVar": "PASSWORD", "label": "Password", "type": "password", "default": "", "xmlTag": "password" },
-    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 8, "xmlTag": "maxplayers" },
+    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 8, "xmlTag": "maxplayers" , "requiresRestart": true },
     { "envVar": "IS_PUBLIC", "label": "Public", "type": "bool", "default": true, "xmlTag": "public" },
     { "envVar": "ALLOW_SPECTATING", "label": "Allow Spectating", "type": "bool", "default": true, "xmlTag": "allowspectating" },
     { "envVar": "ALLOW_RESPAWN", "label": "Allow Respawn", "type": "bool", "default": true, "xmlTag": "allowrespawn" },

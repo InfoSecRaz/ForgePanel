@@ -19,7 +19,7 @@
   "installNotes": "Minecraft Bedrock server is downloaded directly from Mojang (no Steam account required).",
   "fields": [
     { "envVar": "server-name", "label": "Server Name", "type": "text", "default": "ForgePanel Bedrock Server", "propKey": "server-name" },
-    { "envVar": "max-players", "label": "Max Players", "type": "number", "default": 10, "propKey": "max-players" },
+    { "envVar": "max-players", "label": "Max Players", "type": "number", "default": 10, "propKey": "max-players" , "requiresRestart": true },
     { "envVar": "gamemode", "label": "Gamemode", "type": "select", "options": ["survival", "creative", "adventure"], "default": "survival", "propKey": "gamemode" },
     { "envVar": "difficulty", "label": "Difficulty", "type": "select", "options": ["peaceful", "easy", "normal", "hard"], "default": "easy", "propKey": "difficulty" },
     { "envVar": "allow-cheats", "label": "Allow Cheats", "type": "bool", "default": false, "propKey": "allow-cheats" },

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../../lib/api';
 import { getSocket } from '../../lib/socket';
 import { useToast } from '../../lib/ToastContext';
-import { formatUptime, formatDate } from '../../lib/format';
+import { formatUptime, formatDate, formatRelativeTime } from '../../lib/format';
 
 const RANGES = ['30min', '1h', '6h', '24h', '7d', '30d'];
 
@@ -172,7 +172,11 @@ export default function Overview({ server }) {
                   transition={{ duration: 0.16, ease: 'easeOut' }}
                   className="text-text-secondary"
                 >
+                  <span className={e.username ? 'text-accent' : 'text-text-muted'}>{e.username || 'System'}</span>{' '}
                   <span className="text-text-primary">{e.eventType}</span>: {e.description}
+                  <span className="text-text-muted text-[11px] ml-1.5">
+                    {e.ipAddress ? `${e.ipAddress} · ` : ''}{formatRelativeTime(e.occurredAt)}
+                  </span>
                 </motion.li>
               ))}
             </AnimatePresence>

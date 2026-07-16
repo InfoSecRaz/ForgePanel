@@ -19,7 +19,7 @@
   "fields": [
     { "envVar": "HOSTNAME", "label": "Hostname", "type": "text", "default": "ForgePanel Rust Server", "propKey": "hostname" },
     { "envVar": "DESCRIPTION", "label": "Description", "type": "text", "default": "", "propKey": "description" },
-    { "envVar": "MAXPLAYERS", "label": "Max Players", "type": "number", "default": 50, "propKey": "maxplayers" },
+    { "envVar": "MAXPLAYERS", "label": "Max Players", "type": "number", "default": 50, "propKey": "maxplayers" , "requiresRestart": true },
     { "envVar": "WORLDSIZE", "label": "World Size", "type": "number", "default": 3500, "propKey": "worldsize" },
     { "envVar": "SEED", "label": "Seed", "type": "number", "default": 12345, "propKey": "seed" },
     { "envVar": "RCON_PASSWORD", "label": "RCON Password", "type": "password", "default": "", "propKey": "rcon_password" },

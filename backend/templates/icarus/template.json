@@ -16,7 +16,7 @@
   "fields": [
     { "envVar": "SERVER_NAME", "label": "Server Name", "type": "text", "default": "ForgePanel Icarus Server", "jsonKey": "ServerName" },
     { "envVar": "SERVER_PASSWORD", "label": "Server Password", "type": "password", "default": "", "jsonKey": "ServerPassword" },
-    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 8, "jsonKey": "MaxPlayers" },
+    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 8, "jsonKey": "MaxPlayers" , "requiresRestart": true },
     { "envVar": "ALLOW_NON_ADMINS_LAUNCH", "label": "Allow Non-Admins to Launch", "type": "bool", "default": true, "jsonKey": "AllowNonAdminsLaunch" },
     { "envVar": "LOADING_SCREEN_TEXT", "label": "Loading Screen Text", "type": "text", "default": "", "jsonKey": "LoadingScreenText" }
   ]

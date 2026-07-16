@@ -18,7 +18,7 @@
   "fields": [
     { "envVar": "HOSTNAME", "label": "Hostname", "type": "text", "default": "ForgePanel CS2 Server", "propKey": "hostname" },
     { "envVar": "RCON_PASSWORD", "label": "RCON Password", "type": "password", "default": "", "propKey": "rcon_password" },
-    { "envVar": "MAXPLAYERS", "label": "Max Players", "type": "number", "default": 10, "propKey": "maxplayers" },
+    { "envVar": "MAXPLAYERS", "label": "Max Players", "type": "number", "default": 10, "propKey": "maxplayers" , "requiresRestart": true },
     { "envVar": "MAP", "label": "Map", "type": "text", "default": "de_dust2", "propKey": "map" },
     { "envVar": "TICKRATE", "label": "Tickrate", "type": "select", "options": ["64", "128"], "default": "64", "propKey": "tickrate" },
     { "envVar": "SV_CHEATS", "label": "sv_cheats", "type": "bool", "default": false, "propKey": "sv_cheats" },

@@ -24,7 +24,7 @@
     { "envVar": "motd", "label": "MOTD", "type": "text", "default": "A ForgePanel Minecraft Server", "propKey": "motd" },
     { "envVar": "gamemode", "label": "Gamemode", "type": "select", "options": ["survival", "creative", "adventure", "spectator"], "default": "survival", "propKey": "gamemode" },
     { "envVar": "difficulty", "label": "Difficulty", "type": "select", "options": ["peaceful", "easy", "normal", "hard"], "default": "easy", "propKey": "difficulty" },
-    { "envVar": "max-players", "label": "Max Players", "type": "number", "default": 20, "propKey": "max-players" },
+    { "envVar": "max-players", "label": "Max Players", "type": "number", "default": 20, "propKey": "max-players" , "requiresRestart": true },
     { "envVar": "online-mode", "label": "Online Mode (Premium Accounts Only)", "type": "bool", "default": true, "propKey": "online-mode" },
     { "envVar": "white-list", "label": "Whitelist Enabled", "type": "bool", "default": false, "propKey": "white-list" },
     { "envVar": "pvp", "label": "PVP", "type": "bool", "default": true, "propKey": "pvp" },

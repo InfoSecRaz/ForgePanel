@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useToast } from '../lib/ToastContext';
 import { getFieldHelp } from '../lib/fieldHelp';
+import PasswordInput from '../components/PasswordInput';
+import FieldBadges from '../components/FieldBadges';
 
 function primaryPort(template) {
   const entry = (template.ports || []).find((p) => p.primary) || (template.ports || [])[0];
@@ -125,8 +127,13 @@ function NewServerModal({ template, onClose, onCreated }) {
           <div className="border-t border-hairline pt-4 space-y-4">
             {(template.fields || []).map((field) => (
               <div key={field.envVar}>
-                <label className="field-label">{field.label}</label>
-                {field.type === 'bool' ? (
+                <label className="field-label">
+                  {field.label}
+                  <FieldBadges field={field} />
+                </label>
+                {field.readonly ? (
+                  <p className="text-[13px] text-text-secondary py-1.5">{String(fieldValues[field.envVar] ?? field.default ?? '')}</p>
+                ) : field.type === 'bool' ? (
                   <input
                     type="checkbox"
                     checked={!!fieldValues[field.envVar]}
@@ -142,11 +149,15 @@ function NewServerModal({ template, onClose, onCreated }) {
                       <option key={opt} value={opt}>{opt}</option>
                     ))}
                   </select>
+                ) : field.type === 'password' ? (
+                  <PasswordInput
+                    value={fieldValues[field.envVar] ?? ''}
+                    onChange={(e) => setFieldValues((v) => ({ ...v, [field.envVar]: e.target.value }))}
+                  />
                 ) : (
                   <input
-                    type={field.type === 'password' ? 'password' : field.type === 'number' ? 'number' : 'text'}
+                    type={field.type === 'number' ? 'number' : 'text'}
                     className="input"
-                    autoComplete={field.type === 'password' ? 'off' : undefined}
                     value={fieldValues[field.envVar] ?? ''}
                     onChange={(e) => setFieldValues((v) => ({ ...v, [field.envVar]: e.target.value }))}
                   />

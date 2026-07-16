@@ -7,7 +7,7 @@ const db = require('../db/db');
 const { requireAuth, requirePermission } = require('../auth');
 const { resolveSafePath } = require('../services/pathSafety');
 const { backupBeforeSave } = require('../services/configBackupService');
-const { logActivity } = require('../services/activityService');
+const { logActivity, actorFromReq } = require('../services/activityService');
 
 const router = express.Router({ mergeParams: true });
 
@@ -75,7 +75,10 @@ router.post('/content', requireAuth, requirePermission('file_write'), (req, res)
     backupBeforeSave(target);
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(target, content ?? '');
-    logActivity(server.id, 'file_saved', `Saved ${relPath}`);
+    {
+      const { userId, ipAddress } = actorFromReq(req);
+      logActivity(server.id, 'file_saved', `Saved ${relPath}`, null, userId, ipAddress);
+    }
     res.json({ ok: true });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -101,7 +104,10 @@ router.post('/upload', requireAuth, requirePermission('file_write'), upload.sing
     const dest = resolveSafePath(dataDirFor(server.id), destRelPath);
     fs.mkdirSync(path.dirname(dest), { recursive: true });
     fs.renameSync(req.file.path, dest);
-    logActivity(server.id, 'file_uploaded', `Uploaded ${destRelPath}`);
+    {
+      const { userId, ipAddress } = actorFromReq(req);
+      logActivity(server.id, 'file_uploaded', `Uploaded ${destRelPath}`, null, userId, ipAddress);
+    }
     res.json({ ok: true, path: destRelPath });
   } catch (err) {
     if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
@@ -161,7 +167,10 @@ router.delete('/', requireAuth, requirePermission('file_write'), (req, res) => {
   try {
     const target = resolveSafePath(dataDirFor(server.id), req.query.path || '');
     fs.rmSync(target, { recursive: true, force: true });
-    logActivity(server.id, 'file_deleted', `Deleted ${req.query.path}`);
+    {
+      const { userId, ipAddress } = actorFromReq(req);
+      logActivity(server.id, 'file_deleted', `Deleted ${req.query.path}`, null, userId, ipAddress);
+    }
     res.json({ ok: true });
   } catch (err) {
     res.status(400).json({ error: err.message });

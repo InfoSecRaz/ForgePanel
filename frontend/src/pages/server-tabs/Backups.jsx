@@ -8,6 +8,7 @@ export default function Backups({ server }) {
   const [busy, setBusy] = useState(false);
   const [restoreTarget, setRestoreTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [tier, setTier] = useState('free');
   const toast = useToast();
 
   function load() {
@@ -15,6 +16,9 @@ export default function Backups({ server }) {
   }
 
   useEffect(() => { load(); }, [server.id]);
+  useEffect(() => {
+    api.get('/settings/host').then((host) => setTier(host.tier || 'free')).catch(() => {});
+  }, []);
 
   async function createBackup() {
     setBusy(true);
@@ -95,7 +99,13 @@ export default function Backups({ server }) {
             ))}
           </tbody>
         </table>
-        {backups.length === 0 && <p className="p-6 text-center text-text-muted text-caption">No backups yet.</p>}
+        {backups.length === 0 && (
+          <p className="p-6 text-center text-text-muted text-caption">
+            {tier === 'pro'
+              ? 'No backups yet. Backups are retained according to your configured retention policy. Create your first backup to get started.'
+              : 'No backups yet. Free tier retains the last 10 backups. Create your first backup to get started.'}
+          </p>
+        )}
       </div>
 
       {restoreTarget && (

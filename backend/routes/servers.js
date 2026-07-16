@@ -7,7 +7,7 @@ const db = require('../db/db');
 const dockerService = require('../services/dockerService');
 const { requireAuth, requirePermission } = require('../auth');
 const { getTemplate } = require('../templates/registry');
-const { logActivity } = require('../services/activityService');
+const { logActivity, actorFromReq } = require('../services/activityService');
 const { getMaxPlayers } = require('../services/configService');
 
 const router = express.Router();
@@ -77,7 +77,10 @@ router.post('/', requireAuth, async (req, res) => {
     rconPassword, ramLimitMb || template.defaultRamMb || 2048, cpuLimitPercent || 100, diskLimitGb || 20
   );
 
-  logActivity(id, 'server_created', `Server "${name}" created from template ${gameId}`);
+  {
+    const { userId, ipAddress } = actorFromReq(req);
+    logActivity(id, 'server_created', `Server "${name}" created from template ${gameId}`, null, userId, ipAddress);
+  }
 
   res.status(201).json(toApiServer(db.prepare('SELECT * FROM servers WHERE id = ?').get(id)));
 
@@ -139,7 +142,8 @@ router.post('/:id/start', requireAuth, requirePermission('start_stop'), async (r
 
   try {
     await dockerService.startContainer(row.container_id);
-    logActivity(row.id, 'server_start_requested', 'Start command issued');
+    const { userId, ipAddress } = actorFromReq(req);
+    logActivity(row.id, 'server_start_requested', 'Start command issued', null, userId, ipAddress);
     res.json({ ok: true });
   } catch (err) {
     db.prepare('UPDATE servers SET state = ? WHERE id = ?').run('crashed', row.id);
@@ -163,7 +167,10 @@ router.post('/:id/stop', requireAuth, requirePermission('start_stop'), async (re
     } else {
       await dockerService.stopContainer(row.container_id);
     }
-    logActivity(row.id, 'server_stop_requested', 'Stop command issued');
+    {
+      const { userId, ipAddress } = actorFromReq(req);
+      logActivity(row.id, 'server_stop_requested', 'Stop command issued', null, userId, ipAddress);
+    }
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -180,7 +187,10 @@ router.post('/:id/restart', requireAuth, requirePermission('start_stop'), async 
 
   try {
     await dockerService.restartContainer(row.container_id);
-    logActivity(row.id, 'server_restart_requested', 'Restart command issued');
+    {
+      const { userId, ipAddress } = actorFromReq(req);
+      logActivity(row.id, 'server_restart_requested', 'Restart command issued', null, userId, ipAddress);
+    }
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -207,9 +217,12 @@ router.get('/:id/activity', requireAuth, (req, res) => {
   const row = db.prepare('SELECT id FROM servers WHERE id = ?').get(req.params.id);
   if (!row) return res.status(404).json({ error: 'Server not found' });
 
-  const rows = db.prepare(
-    'SELECT id, event_type, description, metadata, occurred_at FROM activity_log WHERE server_id = ? ORDER BY occurred_at DESC LIMIT 50'
-  ).all(req.params.id);
+  const rows = db.prepare(`
+    SELECT a.*, u.username FROM activity_log a
+    LEFT JOIN users u ON a.user_id = u.id
+    WHERE a.server_id = ?
+    ORDER BY a.occurred_at DESC LIMIT 50
+  `).all(req.params.id);
 
   res.json({
     events: rows.map((r) => ({
@@ -217,6 +230,9 @@ router.get('/:id/activity', requireAuth, (req, res) => {
       eventType: r.event_type,
       description: r.description,
       metadata: r.metadata ? JSON.parse(r.metadata) : null,
+      userId: r.user_id,
+      username: r.username,
+      ipAddress: r.ip_address,
       occurredAt: r.occurred_at
     }))
   });

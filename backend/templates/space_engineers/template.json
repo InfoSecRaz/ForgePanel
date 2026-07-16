@@ -19,7 +19,7 @@
   "fields": [
     { "envVar": "SERVER_NAME", "label": "Server Name", "type": "text", "default": "ForgePanel Space Engineers Server", "xmlTag": "ServerName" },
     { "envVar": "WORLD_NAME", "label": "World Name", "type": "text", "default": "ForgePanel World", "xmlTag": "WorldName" },
-    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 8, "xmlTag": "MaxPlayers" },
+    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 8, "xmlTag": "MaxPlayers" , "requiresRestart": true },
     { "envVar": "MODS", "label": "Mods (comma-separated Workshop IDs)", "type": "text", "default": "", "xmlTag": "Mods" }
   ]
 }

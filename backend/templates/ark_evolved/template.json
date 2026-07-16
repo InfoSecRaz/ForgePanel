@@ -19,7 +19,7 @@
     { "envVar": "SERVER_NAME", "label": "Server Name", "type": "text", "default": "ForgePanel ARK Server", "iniKey": "SessionName", "iniSection": "SessionSettings" },
     { "envVar": "ADMIN_PASSWORD", "label": "Admin Password", "type": "password", "default": "", "iniKey": "ServerAdminPassword", "iniSection": "ServerSettings" },
     { "envVar": "SERVER_PASSWORD", "label": "Server Password", "type": "password", "default": "", "iniKey": "ServerPassword", "iniSection": "ServerSettings" },
-    { "envVar": "MAXPLAYERS", "label": "Max Players", "type": "number", "default": 70, "iniKey": "MaxPlayers", "iniSection": "ServerSettings" },
+    { "envVar": "MAXPLAYERS", "label": "Max Players", "type": "number", "default": 70, "iniKey": "MaxPlayers", "iniSection": "ServerSettings" , "requiresRestart": true },
     { "envVar": "MAP", "label": "Map", "type": "text", "default": "TheIsland", "iniKey": "Map", "iniSection": "ServerSettings" },
     { "envVar": "HARVEST_MULTIPLIER", "label": "Harvest Multiplier", "type": "number", "default": 1, "iniKey": "HarvestAmountMultiplier", "iniSection": "ServerSettings" },
     { "envVar": "XP_MULTIPLIER", "label": "XP Multiplier", "type": "number", "default": 1, "iniKey": "XPMultiplier", "iniSection": "ServerSettings" },

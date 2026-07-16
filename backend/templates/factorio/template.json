@@ -16,7 +16,7 @@
     { "envVar": "NAME", "label": "Server Name", "type": "text", "default": "ForgePanel Factorio Server", "jsonKey": "name" },
     { "envVar": "DESCRIPTION", "label": "Description", "type": "text", "default": "", "jsonKey": "description" },
     { "envVar": "PASSWORD", "label": "Password", "type": "password", "default": "", "jsonKey": "game_password" },
-    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 0, "jsonKey": "max_players" },
+    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 0, "jsonKey": "max_players" , "requiresRestart": true },
     { "envVar": "VISIBILITY_PUBLIC", "label": "Public Visibility", "type": "bool", "default": false, "jsonKey": "visibility_public" },
     { "envVar": "VISIBILITY_LAN", "label": "LAN Visibility", "type": "bool", "default": true, "jsonKey": "visibility_lan" },
     { "envVar": "AUTOSAVE_INTERVAL", "label": "Autosave Interval (min)", "type": "number", "default": 10, "jsonKey": "autosave_interval" },

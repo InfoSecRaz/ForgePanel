@@ -14,7 +14,7 @@
   "defaultRamMb": 2048,
   "fields": [
     { "envVar": "WORLD_NAME", "label": "World Name", "type": "text", "default": "ForgePanel World" },
-    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 8 },
+    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 8 , "requiresRestart": true },
     { "envVar": "SEASON", "label": "Season", "type": "select", "options": ["None", "Easter", "Halloween", "Christmas", "Valentine"], "default": "None" }
   ]
 }

@@ -21,7 +21,7 @@
     { "envVar": "SERVER_NAME", "label": "Server Name", "type": "text", "default": "ForgePanel 7 Days Server", "xmlTag": "ServerName" },
     { "envVar": "SERVER_DESCRIPTION", "label": "Server Description", "type": "text", "default": "", "xmlTag": "ServerDescription" },
     { "envVar": "SERVER_PASSWORD", "label": "Server Password", "type": "password", "default": "", "xmlTag": "ServerPassword" },
-    { "envVar": "MAXPLAYERS", "label": "Max Players", "type": "number", "default": 8, "xmlTag": "ServerMaxPlayerCount" },
+    { "envVar": "MAXPLAYERS", "label": "Max Players", "type": "number", "default": 8, "xmlTag": "ServerMaxPlayerCount" , "requiresRestart": true },
     { "envVar": "GAME_WORLD", "label": "Game World", "type": "select", "options": ["Navezgane", "RNG Worlds"], "default": "Navezgane", "xmlTag": "GameWorld" },
     { "envVar": "GAME_NAME", "label": "Game Name", "type": "text", "default": "My Game", "xmlTag": "GameName" },
     { "envVar": "PVP_ENABLED", "label": "PVP Enabled", "type": "bool", "default": true, "xmlTag": "GameMode" },

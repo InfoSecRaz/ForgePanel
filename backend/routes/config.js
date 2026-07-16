@@ -6,7 +6,7 @@ const { requireAuth, requirePermission } = require('../auth');
 const { getTemplate } = require('../templates/registry');
 const { renderConfig } = require('../services/configService');
 const { backupBeforeSave } = require('../services/configBackupService');
-const { logActivity } = require('../services/activityService');
+const { logActivity, actorFromReq } = require('../services/activityService');
 
 const router = express.Router({ mergeParams: true });
 
@@ -52,7 +52,10 @@ router.post('/', requireAuth, requirePermission('config_edit'), (req, res) => {
       }
       renderConfig(template, dataPath, fields);
     }
-    logActivity(server.id, 'config_changed', 'Configuration updated');
+    {
+      const { userId, ipAddress } = actorFromReq(req);
+      logActivity(server.id, 'config_changed', 'Configuration updated', null, userId, ipAddress);
+    }
     res.json({ ok: true, warning: server.state === 'running' ? 'Server is running; restart to apply changes' : null });
   } catch (err) {
     res.status(400).json({ error: err.message });

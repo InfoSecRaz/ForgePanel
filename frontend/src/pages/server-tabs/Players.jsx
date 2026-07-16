@@ -74,7 +74,11 @@ export default function Players({ server }) {
             ))}
           </tbody>
         </table>
-        {online.length === 0 && <p className="p-6 text-center text-text-muted text-caption">No players online.</p>}
+        {online.length === 0 && (
+          <p className="p-6 text-center text-text-muted text-caption">
+            No players online right now. Player history appears below once players have connected.
+          </p>
+        )}
       </div>
 
       <div className="mt-lg">
@@ -98,7 +102,11 @@ export default function Players({ server }) {
               ))}
             </tbody>
           </table>
-          {history.length === 0 && <p className="p-6 text-center text-text-muted text-caption">No player history yet.</p>}
+          {history.length === 0 && (
+            <p className="p-6 text-center text-text-muted text-caption">
+              No player history yet. Join history is recorded automatically when players connect.
+            </p>
+          )}
         </div>
       </div>
 

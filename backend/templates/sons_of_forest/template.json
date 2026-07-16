@@ -20,7 +20,7 @@
   "fields": [
     { "envVar": "SERVER_NAME", "label": "Server Name", "type": "text", "default": "ForgePanel SOTF Server", "jsonKey": "ServerName" },
     { "envVar": "SERVER_PASSWORD", "label": "Server Password", "type": "password", "default": "", "jsonKey": "ServerPassword" },
-    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 8, "jsonKey": "MaxPlayers" },
+    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 8, "jsonKey": "MaxPlayers" , "requiresRestart": true },
     { "envVar": "LAN_ONLY", "label": "LAN Only", "type": "bool", "default": false, "jsonKey": "LanOnly" },
     { "envVar": "SAVE_INTERVAL", "label": "Save Interval (s)", "type": "number", "default": 300, "jsonKey": "SaveInterval" },
     { "envVar": "IDLE_KICK_TIME", "label": "Idle Kick Time (s)", "type": "number", "default": 0, "jsonKey": "IdleKickTime" }

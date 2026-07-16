@@ -17,7 +17,7 @@
   "fields": [
     { "envVar": "SERVER_NAME", "label": "Server Name", "type": "text", "default": "ForgePanel Avorion Server", "iniKey": "ServerName", "iniSection": "General" },
     { "envVar": "ADMIN_PASSWORD", "label": "Admin Password", "type": "password", "default": "", "iniKey": "AdminPassword", "iniSection": "General" },
-    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 16, "iniKey": "MaxPlayers", "iniSection": "General" },
+    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 16, "iniKey": "MaxPlayers", "iniSection": "General" , "requiresRestart": true },
     { "envVar": "GALAXY_NAME", "label": "Galaxy Name", "type": "text", "default": "ForgePanelGalaxy", "iniKey": "GalaxyName", "iniSection": "General" }
   ]
 }

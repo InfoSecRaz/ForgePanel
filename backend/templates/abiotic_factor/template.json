@@ -17,6 +17,6 @@
   "fields": [
     { "envVar": "SERVER_NAME", "label": "Server Name", "type": "text", "default": "ForgePanel Abiotic Factor Server" },
     { "envVar": "SERVER_PASSWORD", "label": "Server Password", "type": "password", "default": "" },
-    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 4 }
+    { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 4 , "requiresRestart": true }
   ]
 }

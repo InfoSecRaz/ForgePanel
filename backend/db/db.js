@@ -142,6 +142,16 @@ CREATE INDEX IF NOT EXISTS idx_player_history ON player_history(server_id, occur
 
 db.exec(SCHEMA);
 
+function ensureColumn(table, column, definition) {
+  const columns = db.prepare(`PRAGMA table_info(${table})`).all();
+  if (!columns.some((c) => c.name === column)) {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  }
+}
+
+ensureColumn('activity_log', 'user_id', 'TEXT');
+ensureColumn('activity_log', 'ip_address', 'TEXT');
+
 function seedAdmin() {
   const { count } = db.prepare('SELECT COUNT(*) as count FROM users').get();
   if (count > 0 || !process.env.ADMIN_PASSWORD_HASH) return;
