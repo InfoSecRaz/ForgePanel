@@ -33,4 +33,16 @@ router.post('/disable', requireAuth, requirePermission('start_stop'), (req, res)
   res.json(playitService.disableTunnel(server.id));
 });
 
+router.post('/address', requireAuth, requirePermission('start_stop'), (req, res) => {
+  const server = db.prepare('SELECT * FROM servers WHERE id = ?').get(req.params.id);
+  if (!server) return res.status(404).json({ error: 'Server not found' });
+
+  try {
+    const result = playitService.setPublicAddress(server.id, (req.body || {}).address, req.app.locals.io);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

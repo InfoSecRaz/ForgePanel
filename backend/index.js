@@ -12,7 +12,6 @@ const dockerService = require('./services/dockerService');
 const playerService = require('./services/playerService');
 const stateWatcher = require('./services/stateWatcher');
 const resourceService = require('./services/resourceService');
-const playitService = require('./services/playitService');
 const schedulerService = require('./services/schedulerService');
 const modUpdateChecker = require('./services/modUpdateChecker');
 const discordService = require('./services/discordService');
@@ -146,7 +145,6 @@ async function start() {
   stateWatcher.attachStartHandler(ensureLogStream);
   stateWatcher.watchDockerEvents(io);
   resourceService.startMonitoring(io);
-  playitService.startTunnelPolling(io);
   schedulerService.loadAllTasks();
   modUpdateChecker.startPeriodicCheck();
   discordService.initBot();

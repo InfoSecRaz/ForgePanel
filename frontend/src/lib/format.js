@@ -34,6 +34,15 @@ export function formatDateTime(sqliteTimestamp) {
   return date ? date.toLocaleString() : '-';
 }
 
+// A tunnel's public address is only meaningful once playit has actually assigned one
+// (playit_public_address); enabling a tunnel alone doesn't guarantee that yet, since the
+// per-server port mapping is finished on playit.gg's own dashboard, not by ForgePanel. Until
+// then, fall back to this host's LAN address, same as when no tunnel is configured at all.
+export function serverAddress(server) {
+  if (server.playit_enabled && server.playit_public_address) return server.playit_public_address;
+  return `${window.location.hostname}:${server.port}`;
+}
+
 export function formatRelativeTime(timestamp) {
   const date = timestamp.includes('T') || timestamp.endsWith('Z') ? new Date(timestamp) : parseUtc(timestamp);
   if (!date) return '';

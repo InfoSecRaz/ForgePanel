@@ -49,23 +49,6 @@ function exchangeClaim(claimCode, waitSeconds = 120) {
   });
 }
 
-/**
- * Self-managed playit agents don't expose a tunnel-creation API over the local CLI;
- * tunnel-to-port mappings are configured on the playit.gg dashboard after claiming.
- * We poll `playit status` for an address associated with the server's local port.
- */
-function findPublicAddressForPort(port) {
-  const status = getStatus();
-  const lines = status.split('\n');
-  for (const line of lines) {
-    if (line.includes(String(port)) && /[a-z0-9.-]+\.(playit\.gg|joinmc\.link)/i.test(line)) {
-      const match = line.match(/([a-z0-9.-]+\.(playit\.gg|joinmc\.link)(:\d+)?)/i);
-      if (match) return match[1];
-    }
-  }
-  return null;
-}
-
 async function enableTunnel(serverId, port) {
   db.prepare('UPDATE servers SET playit_enabled = 1 WHERE id = ?').run(serverId);
   return { ok: true, dashboardUrl: 'https://playit.gg/account/tunnels', localPort: port };
@@ -76,28 +59,26 @@ function disableTunnel(serverId) {
   return { ok: true };
 }
 
-function pollTunnelAddresses(io) {
-  const servers = db.prepare('SELECT * FROM servers WHERE playit_enabled = 1').all();
-  for (const server of servers) {
-    const address = findPublicAddressForPort(server.port);
-    if (address && address !== server.playit_public_address) {
-      db.prepare('UPDATE servers SET playit_public_address = ? WHERE id = ?').run(address, server.id);
-      io.emit('tunnel:update', { serverId: server.id, address });
-      if (server.discord_webhook_url) {
-        require('./discordService').notify(server.id, 'tunnel_changed', `Tunnel address for "${server.name}" changed to ${address}`);
-      }
-    }
-  }
-}
+// Self-managed playit agents (this CLI's --systemd mode, version 1.0.9 as installed) have no
+// local way to enumerate assigned tunnel addresses: `playit status` doesn't list them, there's
+// no --json flag, the account-level API keys page is empty on the free tier, and the daemon's
+// local IPC socket uses an undocumented protocol that resets the connection on unrecognized
+// requests (confirmed by direct probing, not just assumption). So unlike enable/disable, the
+// address itself has to be entered by whoever set up the tunnel on playit.gg's own dashboard,
+// same pattern as the Discord notification webhook elsewhere in this app. If playit ever adds
+// a documented local query mechanism, this is the function to replace.
+function setPublicAddress(serverId, address, io) {
+  const server = db.prepare('SELECT * FROM servers WHERE id = ?').get(serverId);
+  if (!server) throw new Error('Server not found');
 
-function startTunnelPolling(io) {
-  setInterval(() => {
-    try {
-      pollTunnelAddresses(io);
-    } catch (err) {
-      // playit may be mid-reconnect; skip this cycle.
-    }
-  }, 30 * 1000);
+  const trimmed = (address || '').trim() || null;
+  db.prepare('UPDATE servers SET playit_public_address = ? WHERE id = ?').run(trimmed, serverId);
+
+  if (io) io.emit('tunnel:update', { serverId, address: trimmed });
+  if (trimmed && server.discord_webhook_url) {
+    require('./discordService').notify(serverId, 'tunnel_changed', `Tunnel address for "${server.name}" set to ${trimmed}`);
+  }
+  return { ok: true, address: trimmed };
 }
 
 module.exports = {
@@ -108,5 +89,5 @@ module.exports = {
   exchangeClaim,
   enableTunnel,
   disableTunnel,
-  startTunnelPolling
+  setPublicAddress
 };
