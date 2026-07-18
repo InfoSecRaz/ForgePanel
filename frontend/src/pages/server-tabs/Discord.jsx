@@ -9,10 +9,12 @@ export default function Discord({ server, onServerUpdate }) {
   const [chatRelay, setChatRelay] = useState(!!server.discord_chat_relay);
   const [channels, setChannels] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [botStatus, setBotStatus] = useState(null);
   const toast = useToast();
 
   useEffect(() => {
     api.get('/discord/channels').then(setChannels).catch(() => setChannels([]));
+    api.get('/discord/status').then(setBotStatus).catch(() => {});
   }, []);
 
   async function save() {
@@ -57,10 +59,18 @@ export default function Discord({ server, onServerUpdate }) {
           )}
         </div>
 
-        <label className="flex items-center gap-2 text-caption text-text-primary">
-          <input type="checkbox" checked={chatRelay} onChange={(e) => setChatRelay(e.target.checked)} />
-          Relay in-game chat to Discord and back
-        </label>
+        <div>
+          <label className="flex items-center gap-2 text-caption text-text-primary">
+            <input type="checkbox" checked={chatRelay} onChange={(e) => setChatRelay(e.target.checked)} />
+            Relay in-game chat to Discord and back
+          </label>
+          {botStatus && botStatus.connected && !botStatus.chatRelayAvailable && (
+            <p className="text-label text-warning mt-1">
+              Unavailable right now: the bot's Message Content Intent isn't enabled. Fix this in the{' '}
+              <Link to="/settings" className="text-accent">Discord section of Settings</Link>.
+            </p>
+          )}
+        </div>
 
         <button className="btn btn-primary" disabled={saving} onClick={save}>{saving ? 'Saving...' : 'Save'}</button>
       </div>

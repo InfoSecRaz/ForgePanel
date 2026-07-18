@@ -46,6 +46,11 @@ router.post('/register-commands', requireAdmin, async (req, res) => {
   }
 });
 
+router.get('/status', requireAdmin, (req, res) => {
+  const appId = (db.prepare("SELECT value FROM settings WHERE key = 'discord_application_id'").get() || {}).value;
+  res.json({ ...discordService.getBotStatus(), applicationId: appId || null });
+});
+
 router.get('/channels', requireAdmin, async (req, res) => {
   const client = discordService.getClient();
   if (!client) return res.status(400).json({ error: 'Bot is not connected. Register commands and invite it to a server first.' });
