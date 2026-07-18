@@ -33,8 +33,20 @@ function SummaryField({ label, value }) {
   );
 }
 
+// Looks up the display label for a template's install-time branch choice (e.g. Project
+// Zomboid's Build 41/42) from the stored install_branch value, rather than hardcoding
+// version strings here, keeping this generic for any future template that adds one.
+function installBranchLabel(template, server) {
+  const opt = (template && template.installOptions || []).find((o) => o.key === 'buildBranch');
+  if (!opt) return null;
+  const value = server.install_branch || opt.default;
+  const choice = (opt.options || []).find((c) => c.value === value);
+  return choice ? choice.label : value;
+}
+
 function ServerSummaryCard({ server, template, playerCount }) {
   const diskUsedGb = server.diskUsedMb != null ? (server.diskUsedMb / 1024).toFixed(1) : '-';
+  const versionLabel = installBranchLabel(template, server);
 
   return (
     <div className="card p-4">
@@ -45,6 +57,7 @@ function ServerSummaryCard({ server, template, playerCount }) {
         <SummaryField label="Uptime" value={formatUptime(server)} />
         <SummaryField label="Installed" value={formatDate(server.created_at)} />
         <SummaryField label="Disk Used" value={`${diskUsedGb} GB / ${server.disk_limit_gb} GB allocated`} />
+        {versionLabel && <SummaryField label="Version" value={versionLabel} />}
       </div>
     </div>
   );

@@ -32,5 +32,18 @@
     { "envVar": "MAX_PLAYERS", "label": "Max Players", "type": "number", "default": 16, "iniKey": "MaxPlayers", "iniSection": "General" , "requiresRestart": true },
     { "envVar": "PVP", "label": "PVP", "type": "bool", "default": true, "iniKey": "PVP", "iniSection": "General" },
     { "envVar": "PAUSE_EMPTY", "label": "Pause when empty", "type": "bool", "default": true, "iniKey": "PauseEmpty", "iniSection": "General" }
+  ],
+  "installOptions": [
+    {
+      "key": "buildBranch",
+      "label": "Game Version",
+      "type": "select",
+      "options": [
+        { "value": "stable", "label": "Build 41 (Stable)" },
+        { "value": "unstable", "label": "Build 42 (Unstable Beta)" }
+      ],
+      "default": "stable",
+      "description": "Build 42 is still in beta with ongoing changes. Choose Build 41 for a stable, well-tested server. Switching branches later requires a reinstall."
+    }
   ]
 }

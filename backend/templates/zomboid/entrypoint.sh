@@ -15,13 +15,21 @@ run_steamcmd() {
 }
 
 
+# BUILD_BRANCH comes from the template's installOptions (buildBranch) via installService.js.
+# "stable" (the default) installs whatever Steam's default branch is for this appid; any other
+# value is passed straight through as a steamcmd -beta branch name.
+BETA_FLAG=""
+if [ -n "${BUILD_BRANCH:-}" ] && [ "${BUILD_BRANCH}" != "stable" ]; then
+  BETA_FLAG="-beta ${BUILD_BRANCH}"
+fi
+
 if [ "$1" = "--install-only" ]; then
-  run_steamcmd +force_install_dir /server/data +login anonymous +app_update "${STEAMCMD_APPID:-380870}" validate +quit
+  run_steamcmd +force_install_dir /server/data +login anonymous +app_update "${STEAMCMD_APPID:-380870}" $BETA_FLAG validate +quit
   exit 0
 fi
 
 if [ "${AUTO_UPDATE:-0}" = "1" ]; then
-  run_steamcmd +force_install_dir /server/data +login anonymous +app_update "${STEAMCMD_APPID:-380870}" validate +quit
+  run_steamcmd +force_install_dir /server/data +login anonymous +app_update "${STEAMCMD_APPID:-380870}" $BETA_FLAG validate +quit
 fi
 
 export PATH="./jre64/bin:$PATH"

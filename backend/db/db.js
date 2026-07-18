@@ -151,6 +151,7 @@ function ensureColumn(table, column, definition) {
 
 ensureColumn('activity_log', 'user_id', 'TEXT');
 ensureColumn('activity_log', 'ip_address', 'TEXT');
+ensureColumn('servers', 'install_branch', "TEXT DEFAULT 'stable'");
 
 function seedAdmin() {
   const { count } = db.prepare('SELECT COUNT(*) as count FROM users').get();

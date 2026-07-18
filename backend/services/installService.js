@@ -42,7 +42,14 @@ async function buildImage(io, serverId, template) {
   return imageTag;
 }
 
-async function runInstallContainer(io, serverId, template, dataPath) {
+// Converts an installOptions key like "buildBranch" to the env var name its entrypoint.sh
+// reads, e.g. "BUILD_BRANCH". Keeps template.json declarative rather than hardcoding one
+// env var name per game here.
+function envVarNameForOptionKey(key) {
+  return key.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toUpperCase();
+}
+
+async function runInstallContainer(io, serverId, template, dataPath, installOptionValues) {
   emitProgress(io, serverId, 'Starting install container...', 'download', 0, 1);
 
   const env = [
@@ -51,6 +58,13 @@ async function runInstallContainer(io, serverId, template, dataPath) {
     `HOST_UID=${process.getuid ? process.getuid() : 1000}`,
     `HOST_GID=${process.getgid ? process.getgid() : 1000}`
   ];
+
+  for (const opt of template.installOptions || []) {
+    const value = installOptionValues && installOptionValues[opt.key] !== undefined
+      ? installOptionValues[opt.key]
+      : opt.default;
+    if (value !== undefined) env.push(`${envVarNameForOptionKey(opt.key)}=${value}`);
+  }
 
   const container = await docker.createContainer({
     Image: `forgepanel/${template.id}:latest`,
@@ -92,14 +106,14 @@ function copyDefaultConfig(template, dataPath) {
   fs.cpSync(defaultConfigDir, dataPath, { recursive: true, force: false });
 }
 
-async function install(serverId, template, fields, io) {
+async function install(serverId, template, fields, installOptionValues, io) {
   const dataPath = path.join(DATA_ROOT, serverId, 'data');
   const modsPath = path.join(DATA_ROOT, serverId, 'mods');
 
   try {
     await buildImage(io, serverId, template);
     copyDefaultConfig(template, dataPath);
-    await runInstallContainer(io, serverId, template, dataPath);
+    await runInstallContainer(io, serverId, template, dataPath, installOptionValues);
 
     if (template.id === 'minecraft_java' || template.id === 'minecraft_bedrock') {
       fs.writeFileSync(path.join(dataPath, 'eula.txt'), 'eula=true\n');
@@ -146,8 +160,8 @@ class InstallService {
     this.io = io;
   }
 
-  install(serverId, template, fields) {
-    return install(serverId, template, fields, this.io);
+  install(serverId, template, fields, installOptionValues) {
+    return install(serverId, template, fields, installOptionValues, this.io);
   }
 }
 

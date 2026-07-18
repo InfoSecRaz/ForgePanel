@@ -46,7 +46,9 @@ router.get('/:id', requireAuth, (req, res) => {
 });
 
 router.post('/', requireAuth, async (req, res) => {
-  const { name, gameId, port, queryPort, ramLimitMb, cpuLimitPercent, diskLimitGb, fields } = req.body || {};
+  const {
+    name, gameId, port, queryPort, ramLimitMb, cpuLimitPercent, diskLimitGb, fields, installOptionValues
+  } = req.body || {};
   if (!name || !gameId) return res.status(400).json({ error: 'name and gameId are required' });
 
   const template = getTemplate(gameId);
@@ -68,13 +70,18 @@ router.post('/', requireAuth, async (req, res) => {
 
   const rconPassword = crypto.randomBytes(12).toString('hex');
 
+  const buildBranchOption = (template.installOptions || []).find((o) => o.key === 'buildBranch');
+  const installBranch = buildBranchOption
+    ? ((installOptionValues && installOptionValues.buildBranch) || buildBranchOption.default || 'stable')
+    : 'stable';
+
   db.prepare(`
     INSERT INTO servers (id, name, game_id, state, port, query_port, rcon_password,
-      ram_limit_mb, cpu_limit_percent, disk_limit_gb)
-    VALUES (?, ?, ?, 'installing', ?, ?, ?, ?, ?, ?)
+      ram_limit_mb, cpu_limit_percent, disk_limit_gb, install_branch)
+    VALUES (?, ?, ?, 'installing', ?, ?, ?, ?, ?, ?, ?)
   `).run(
     id, name, gameId, resolvedPort, resolvedQueryPort,
-    rconPassword, ramLimitMb || template.defaultRamMb || 2048, cpuLimitPercent || 100, diskLimitGb || 20
+    rconPassword, ramLimitMb || template.defaultRamMb || 2048, cpuLimitPercent || 100, diskLimitGb || 20, installBranch
   );
 
   {
@@ -84,7 +91,7 @@ router.post('/', requireAuth, async (req, res) => {
 
   res.status(201).json(toApiServer(db.prepare('SELECT * FROM servers WHERE id = ?').get(id)));
 
-  req.app.locals.installService.install(id, template, fields || {}).catch((err) => {
+  req.app.locals.installService.install(id, template, fields || {}, installOptionValues || {}).catch((err) => {
     db.prepare('UPDATE servers SET state = ? WHERE id = ?').run('stopped', id);
     logActivity(id, 'install_failed', err.message);
   });
