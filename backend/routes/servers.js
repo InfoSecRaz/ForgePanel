@@ -104,7 +104,8 @@ router.put('/:id', requireAuth, (req, res) => {
     const camel = f.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
     if (req.body && req.body[camel] !== undefined) {
       updates.push(`${f} = ?`);
-      values.push(req.body[camel]);
+      const value = req.body[camel];
+      values.push(typeof value === 'boolean' ? (value ? 1 : 0) : value);
     }
   }
   if (updates.length === 0) return res.json(toApiServer(row));
