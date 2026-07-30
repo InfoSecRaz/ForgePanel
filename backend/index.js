@@ -44,7 +44,18 @@ const io = new Server(server, { cors: { origin: true, credentials: true } });
 
 const PORT = process.env.PORT || 3001;
 
-app.use(helmet());
+// hsts disabled and upgrade-insecure-requests stripped from the CSP: this server is plain
+// HTTP only (no TLS termination on this port). Both of those defaults tell the browser to
+// silently rewrite http:// subresource requests to https:// -- HSTS via a cached per-host
+// policy, upgrade-insecure-requests via the CSP header on every single load -- and either one
+// alone is enough to break every JS/CSS/API request on a server with no TLS listener at all.
+app.use(helmet({
+  hsts: false,
+  contentSecurityPolicy: {
+    useDefaults: true,
+    directives: { upgradeInsecureRequests: null }
+  }
+}));
 app.use(pinoHttp({ logger }));
 app.use(express.json());
 app.use(sessionMiddleware());
