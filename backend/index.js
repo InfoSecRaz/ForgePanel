@@ -3,8 +3,11 @@ require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const path = require('path');
+const helmet = require('helmet');
+const pinoHttp = require('pino-http');
 const { Server } = require('socket.io');
 
+const logger = require('./logger');
 const { sessionMiddleware, requireAuth } = require('./auth');
 const { attachIo } = require('./services/activityService');
 const { InstallService } = require('./services/installService');
@@ -15,6 +18,7 @@ const resourceService = require('./services/resourceService');
 const schedulerService = require('./services/schedulerService');
 const modUpdateChecker = require('./services/modUpdateChecker');
 const discordService = require('./services/discordService');
+const discordPanelService = require('./services/discordPanelService');
 const sftpService = require('./services/sftpService');
 const { getTemplate } = require('./templates/registry');
 
@@ -40,6 +44,8 @@ const io = new Server(server, { cors: { origin: true, credentials: true } });
 
 const PORT = process.env.PORT || 3001;
 
+app.use(helmet());
+app.use(pinoHttp({ logger }));
 app.use(express.json());
 app.use(sessionMiddleware());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -100,7 +106,7 @@ async function ensureLogStream(serverId) {
     stream.on('end', () => activeLogStreams.delete(serverId));
     stream.on('error', () => activeLogStreams.delete(serverId));
   } catch (err) {
-    console.error(`Failed to stream logs for ${serverId}:`, err.message);
+    logger.error({ err, serverId }, 'Failed to stream logs');
   }
 }
 
@@ -148,20 +154,24 @@ async function start() {
   schedulerService.loadAllTasks();
   modUpdateChecker.startPeriodicCheck();
   discordService.initBot();
+  // Deliberately separate from resourceService's 10s stats poll (which also drives alerting
+  // and history recording): the panel only needs a periodic nudge to keep CPU/RAM/uptime
+  // fresh between real events, not the full activity-log-adjacent path that poll runs.
+  setInterval(() => discordPanelService.tickAllRunning(), 60 * 1000);
 
   try {
     sftpService.start();
   } catch (err) {
-    console.error('Failed to start SFTP server:', err.message);
+    logger.error({ err }, 'Failed to start SFTP server');
   }
 
   server.listen(PORT, () => {
-    console.log(`ForgePanel backend listening on port ${PORT}`);
+    logger.info(`ForgePanel backend listening on port ${PORT}`);
   });
 }
 
 start().catch((err) => {
-  console.error('Failed to start ForgePanel backend:', err);
+  logger.error({ err }, 'Failed to start ForgePanel backend');
   process.exit(1);
 });
 

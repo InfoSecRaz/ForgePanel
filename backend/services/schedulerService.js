@@ -4,6 +4,7 @@ const db = require('../db/db');
 const dockerService = require('./dockerService');
 const { logActivity } = require('./activityService');
 const { notify } = require('./discordService');
+const logger = require('../logger');
 
 const jobs = new Map();
 const warningTimers = new Map();
@@ -41,7 +42,7 @@ function scheduleRestartWarnings(task, server) {
 
     warningTimers.set(task.id, timers);
   } catch (err) {
-    console.error(`Failed to schedule restart warnings for task ${task.id}:`, err.message);
+    logger.error({ err, taskId: task.id }, 'Failed to schedule restart warnings');
   }
 }
 
@@ -75,7 +76,7 @@ async function executeTask(task) {
         break;
       }
       default:
-        console.error(`Unknown scheduled task type: ${task.type}`);
+        logger.error({ taskType: task.type }, 'Unknown scheduled task type');
     }
 
     db.prepare("UPDATE scheduled_tasks SET last_run = datetime('now') WHERE id = ?").run(task.id);

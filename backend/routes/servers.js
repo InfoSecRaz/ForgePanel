@@ -9,6 +9,9 @@ const { requireAuth, requirePermission } = require('../auth');
 const { getTemplate } = require('../templates/registry');
 const { logActivity, actorFromReq } = require('../services/activityService');
 const { getMaxPlayers } = require('../services/configService');
+const { computeHealth } = require('../services/healthService');
+const discordPanelService = require('../services/discordPanelService');
+const { createServerSchema, updateServerSchema } = require('../schemas');
 
 const router = express.Router();
 
@@ -29,8 +32,11 @@ function toApiServer(row) {
   const template = getTemplate(row.game_id);
   return {
     ...rest,
+    gameName: template ? template.name : row.game_id,
+    category: template ? template.category : null,
     maxPlayers: template ? getMaxPlayers(template, serverDirs(row.id).data) : null,
-    diskUsedMb: latestDiskMb(row.id)
+    diskUsedMb: latestDiskMb(row.id),
+    health: computeHealth(row)
   };
 }
 
@@ -46,10 +52,16 @@ router.get('/:id', requireAuth, (req, res) => {
 });
 
 router.post('/', requireAuth, async (req, res) => {
+  let body;
+  try {
+    body = createServerSchema.parse(req.body || {});
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
   const {
-    name, gameId, port, queryPort, ramLimitMb, cpuLimitPercent, diskLimitGb, fields, installOptionValues
-  } = req.body || {};
-  if (!name || !gameId) return res.status(400).json({ error: 'name and gameId are required' });
+    name, gameId, port, queryPort, ramLimitMb, cpuLimitPercent, diskLimitGb, fields,
+    customColor, customIcon, customTagline, installOptionValues
+  } = body;
 
   const template = getTemplate(gameId);
   if (!template) return res.status(400).json({ error: `Unknown game_id: ${gameId}` });
@@ -70,6 +82,14 @@ router.post('/', requireAuth, async (req, res) => {
 
   const rconPassword = crypto.randomBytes(12).toString('hex');
 
+  // DO NOT REMOVE. RAM/CPU/Disk/Port fields have regressed twice. These four fields
+  // are required in both the form AND the POST body. Use `!= null` here, not `||` --
+  // 0 is a valid CPU limit (unlimited-below-host-share) and `0 || 100` would silently
+  // clobber an explicit 0 with the default.
+  const finalRamLimitMb = ramLimitMb != null ? ramLimitMb : (template.defaultRamMb || 2048);
+  const finalCpuLimitPercent = cpuLimitPercent != null ? cpuLimitPercent : 100;
+  const finalDiskLimitGb = diskLimitGb != null ? diskLimitGb : 20;
+
   const buildBranchOption = (template.installOptions || []).find((o) => o.key === 'buildBranch');
   const installBranch = buildBranchOption
     ? ((installOptionValues && installOptionValues.buildBranch) || buildBranchOption.default || 'stable')
@@ -77,11 +97,12 @@ router.post('/', requireAuth, async (req, res) => {
 
   db.prepare(`
     INSERT INTO servers (id, name, game_id, state, port, query_port, rcon_password,
-      ram_limit_mb, cpu_limit_percent, disk_limit_gb, install_branch)
-    VALUES (?, ?, ?, 'installing', ?, ?, ?, ?, ?, ?, ?)
+      ram_limit_mb, cpu_limit_percent, disk_limit_gb, custom_color, custom_icon, custom_tagline, install_branch)
+    VALUES (?, ?, ?, 'installing', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     id, name, gameId, resolvedPort, resolvedQueryPort,
-    rconPassword, ramLimitMb || template.defaultRamMb || 2048, cpuLimitPercent || 100, diskLimitGb || 20, installBranch
+    rconPassword, finalRamLimitMb, finalCpuLimitPercent, finalDiskLimitGb,
+    customColor || null, customIcon || null, customTagline || null, installBranch
   );
 
   {
@@ -101,17 +122,25 @@ router.put('/:id', requireAuth, (req, res) => {
   const row = db.prepare('SELECT * FROM servers WHERE id = ?').get(req.params.id);
   if (!row) return res.status(404).json({ error: 'Server not found' });
 
+  let body;
+  try {
+    body = updateServerSchema.parse(req.body || {});
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
+
   const fields = [
     'name', 'ram_limit_mb', 'cpu_limit_percent', 'disk_limit_gb', 'auto_restart', 'auto_restart_delay',
-    'discord_webhook_url', 'discord_bot_channel_id', 'discord_chat_relay'
+    'discord_webhook_url', 'discord_bot_channel_id', 'discord_chat_relay', 'discord_status_channel_id',
+    'custom_color', 'custom_icon', 'custom_tagline'
   ];
   const updates = [];
   const values = [];
   for (const f of fields) {
     const camel = f.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
-    if (req.body && req.body[camel] !== undefined) {
+    if (body[camel] !== undefined) {
       updates.push(`${f} = ?`);
-      const value = req.body[camel];
+      const value = body[camel];
       values.push(typeof value === 'boolean' ? (value ? 1 : 0) : value);
     }
   }
@@ -120,7 +149,62 @@ router.put('/:id', requireAuth, (req, res) => {
   updates.push("updated_at = datetime('now')");
   values.push(req.params.id);
   db.prepare(`UPDATE servers SET ${updates.join(', ')} WHERE id = ?`).run(...values);
-  res.json(toApiServer(db.prepare('SELECT * FROM servers WHERE id = ?').get(req.params.id)));
+  const updatedRow = db.prepare('SELECT * FROM servers WHERE id = ?').get(req.params.id);
+  if (updatedRow.discord_status_channel_id) discordPanelService.scheduleUpdate(updatedRow.id);
+  res.json(toApiServer(updatedRow));
+});
+
+// Dedicated from PUT /:id because this one can also push the change live into the running
+// container -- Memory/NanoCpus are cgroup constraints Docker can update without a restart,
+// so "requires a restart" in the UI's confirm copy is a simplification for the user, not a
+// technical requirement; only applied when the caller explicitly opts in (applyNow), since
+// a live-lowered RAM limit below current usage can trigger an OOM kill mid-session.
+router.put('/:id/resources', requireAuth, async (req, res) => {
+  const row = db.prepare('SELECT * FROM servers WHERE id = ?').get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Server not found' });
+
+  const { ramLimitMb, cpuLimitPercent, diskLimitGb, applyNow } = req.body || {};
+  const finalRamLimitMb = ramLimitMb != null ? ramLimitMb : row.ram_limit_mb;
+  const finalCpuLimitPercent = cpuLimitPercent != null ? cpuLimitPercent : row.cpu_limit_percent;
+  const finalDiskLimitGb = diskLimitGb != null ? diskLimitGb : row.disk_limit_gb;
+
+  db.prepare("UPDATE servers SET ram_limit_mb = ?, cpu_limit_percent = ?, disk_limit_gb = ?, updated_at = datetime('now') WHERE id = ?")
+    .run(finalRamLimitMb, finalCpuLimitPercent, finalDiskLimitGb, row.id);
+
+  const { userId, ipAddress } = actorFromReq(req);
+  let applied = false;
+  let warning = null;
+
+  if (row.state === 'running' && row.container_id && applyNow) {
+    try {
+      await dockerService.updateContainerResources(row.container_id, {
+        ramLimitMb: finalRamLimitMb,
+        cpuLimitPercent: finalCpuLimitPercent
+      });
+      applied = true;
+      logActivity(
+        row.id, 'resources_updated',
+        `RAM/CPU limits changed and applied live (RAM ${finalRamLimitMb}MB, CPU ${finalCpuLimitPercent}%, Disk ${finalDiskLimitGb}GB)`,
+        null, userId, ipAddress
+      );
+    } catch (err) {
+      warning = `Saved, but couldn't apply live: ${err.message}. Restart the server manually to pick up the new limits.`;
+      logActivity(
+        row.id, 'resources_updated',
+        `RAM/CPU/Disk limits changed (RAM ${finalRamLimitMb}MB, CPU ${finalCpuLimitPercent}%, Disk ${finalDiskLimitGb}GB); live apply failed`,
+        null, userId, ipAddress
+      );
+    }
+  } else {
+    logActivity(
+      row.id, 'resources_updated',
+      `RAM/CPU/Disk limits changed (RAM ${finalRamLimitMb}MB, CPU ${finalCpuLimitPercent}%, Disk ${finalDiskLimitGb}GB)`,
+      null, userId, ipAddress
+    );
+  }
+
+  const updated = toApiServer(db.prepare('SELECT * FROM servers WHERE id = ?').get(row.id));
+  res.json({ ok: true, applied, warning, server: updated });
 });
 
 router.delete('/:id', requireAuth, async (req, res) => {
@@ -147,6 +231,7 @@ router.post('/:id/start', requireAuth, requirePermission('start_stop'), async (r
   const previous = row.state;
   db.prepare('UPDATE servers SET state = ? WHERE id = ?').run('starting', row.id);
   req.app.locals.io.emit('state:change', { serverId: row.id, state: 'starting', previous });
+  discordPanelService.scheduleUpdate(row.id);
 
   try {
     await dockerService.startContainer(row.container_id);
@@ -156,6 +241,7 @@ router.post('/:id/start', requireAuth, requirePermission('start_stop'), async (r
   } catch (err) {
     db.prepare('UPDATE servers SET state = ? WHERE id = ?').run('crashed', row.id);
     req.app.locals.io.emit('state:change', { serverId: row.id, state: 'crashed', previous: 'starting' });
+    discordPanelService.scheduleUpdate(row.id);
     res.status(500).json({ error: err.message });
   }
 });
@@ -167,6 +253,7 @@ router.post('/:id/stop', requireAuth, requirePermission('start_stop'), async (re
   const previous = row.state;
   db.prepare('UPDATE servers SET state = ? WHERE id = ?').run('stopping', row.id);
   req.app.locals.io.emit('state:change', { serverId: row.id, state: 'stopping', previous });
+  discordPanelService.scheduleUpdate(row.id);
 
   try {
     const template = getTemplate(row.game_id);
@@ -192,6 +279,7 @@ router.post('/:id/restart', requireAuth, requirePermission('start_stop'), async 
   const previous = row.state;
   db.prepare('UPDATE servers SET state = ? WHERE id = ?').run('restarting', row.id);
   req.app.locals.io.emit('state:change', { serverId: row.id, state: 'restarting', previous });
+  discordPanelService.scheduleUpdate(row.id);
 
   try {
     await dockerService.restartContainer(row.container_id);
@@ -219,6 +307,12 @@ router.get('/:id/status', requireAuth, async (req, res) => {
     }
   }
   res.json({ state: row.state, container: containerState });
+});
+
+router.get('/:id/health', requireAuth, (req, res) => {
+  const row = db.prepare('SELECT * FROM servers WHERE id = ?').get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Server not found' });
+  res.json(computeHealth(row));
 });
 
 router.get('/:id/activity', requireAuth, (req, res) => {

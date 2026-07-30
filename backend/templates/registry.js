@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const logger = require('../logger');
 
 const TEMPLATES_DIR = __dirname;
 
@@ -17,7 +18,7 @@ function loadAll() {
       const parsed = JSON.parse(raw);
       templates[parsed.id || entry.name] = { ...parsed, dir: path.join(TEMPLATES_DIR, entry.name) };
     } catch (err) {
-      console.error(`Failed to load template ${entry.name}:`, err.message);
+      logger.error({ err, template: entry.name }, 'Failed to load template');
     }
   }
   return templates;

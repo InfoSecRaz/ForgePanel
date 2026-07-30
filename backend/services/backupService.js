@@ -6,6 +6,7 @@ const db = require('../db/db');
 const dockerService = require('./dockerService');
 const { getTemplate } = require('../templates/registry');
 const { logActivity } = require('./activityService');
+const logger = require('../logger');
 const { getTier } = require('./resourceService');
 
 const DATA_ROOT = process.env.FORGE_DATA_PATH || path.join(__dirname, '..', '..', 'servers');
@@ -70,7 +71,7 @@ async function backupServer(serverId) {
 
   const sizeBytes = fs.statSync(backupPath).size;
   const storageUrl = await uploadToS3(backupPath, filename).catch((err) => {
-    console.error(`S3 backup upload failed for ${serverId}:`, err.message);
+    logger.error({ err, serverId }, 'S3 backup upload failed');
     return null;
   });
 

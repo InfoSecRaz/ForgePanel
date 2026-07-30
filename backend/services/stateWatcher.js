@@ -2,6 +2,7 @@ const db = require('../db/db');
 const dockerService = require('./dockerService');
 const { logActivity } = require('./activityService');
 const { notify } = require('./discordService');
+const logger = require('../logger');
 
 function setState(serverId, state, io) {
   const row = db.prepare('SELECT state FROM servers WHERE id = ?').get(serverId);
@@ -15,7 +16,7 @@ function setState(serverId, state, io) {
 }
 
 function checkReadyPattern(server, template, line, io) {
-  if (server.state !== 'starting' || !template.readyPattern) return;
+  if (!['starting', 'restarting'].includes(server.state) || !template.readyPattern) return;
   if (line.includes(template.readyPattern)) {
     setState(server.id, 'running', io);
     logActivity(server.id, 'server_started', 'Server reached ready state');
@@ -61,7 +62,7 @@ function watchDockerEvents(io) {
     { filters: JSON.stringify({ label: ['forgepanel=true'], type: ['container'] }) },
     (err, stream) => {
       if (err) {
-        console.error('Failed to attach to Docker events stream:', err.message);
+        logger.error({ err }, 'Failed to attach to Docker events stream');
         return;
       }
       stream.on('data', (chunk) => {
@@ -72,7 +73,14 @@ function watchDockerEvents(io) {
           if (action === 'die') handleContainerDie(containerId, io);
           if (action === 'start') {
             const server = db.prepare('SELECT * FROM servers WHERE container_id = ?').get(containerId);
-            if (server && onContainerStart) onContainerStart(server.id);
+            if (server) {
+              // A container started outside the panel's own /start or /restart routes (manual
+              // `docker start`, a host reboot, external tooling) never gets its DB state set to
+              // 'starting', so checkReadyPattern's gate above would never open for it. Reconcile
+              // here so the ready-pattern match still fires for these out-of-band starts.
+              if (!['starting', 'restarting'].includes(server.state)) setState(server.id, 'starting', io);
+              if (onContainerStart) onContainerStart(server.id);
+            }
           }
         } catch (err) {
           // Ignore malformed or partial event chunks.

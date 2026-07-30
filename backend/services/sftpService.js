@@ -6,6 +6,7 @@ const { STATUS_CODE, OPEN_MODE } = ssh2.utils.sftp;
 const db = require('../db/db');
 const { verifyPassword } = require('../auth');
 const { resolveSafePath } = require('./pathSafety');
+const logger = require('../logger');
 const { logActivity } = require('./activityService');
 
 const DATA_ROOT = process.env.FORGE_DATA_PATH || path.join(__dirname, '..', '..', 'servers');
@@ -236,7 +237,7 @@ function start() {
   });
 
   server.listen(port, '0.0.0.0', () => {
-    console.log(`ForgePanel SFTP server listening on port ${port}`);
+    logger.info(`ForgePanel SFTP server listening on port ${port}`);
   });
 
   return server;

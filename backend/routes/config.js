@@ -4,9 +4,10 @@ const path = require('path');
 const db = require('../db/db');
 const { requireAuth, requirePermission } = require('../auth');
 const { getTemplate } = require('../templates/registry');
-const { renderConfig } = require('../services/configService');
+const { renderConfig, readCurrentValues } = require('../services/configService');
 const { backupBeforeSave } = require('../services/configBackupService');
 const { logActivity, actorFromReq } = require('../services/activityService');
+const { saveConfigSchema } = require('../schemas');
 
 const router = express.Router({ mergeParams: true });
 
@@ -22,9 +23,11 @@ router.get('/', requireAuth, requirePermission('config_edit'), (req, res) => {
   const configPath = template.config && template.config.file
     ? path.join(DATA_ROOT, server.id, 'data', template.config.file)
     : null;
+  const dataPath = path.join(DATA_ROOT, server.id, 'data');
 
   res.json({
     fields: template.fields || [],
+    values: readCurrentValues(template, dataPath),
     raw: configPath && fs.existsSync(configPath) ? fs.readFileSync(configPath, 'utf8') : null,
     configType: template.config ? template.config.type : 'args'
   });
@@ -38,7 +41,14 @@ router.post('/', requireAuth, requirePermission('config_edit'), (req, res) => {
   if (!template) return res.status(400).json({ error: 'Unknown template' });
 
   const dataPath = path.join(DATA_ROOT, server.id, 'data');
-  const { fields, raw } = req.body || {};
+
+  let body;
+  try {
+    body = saveConfigSchema.parse(req.body || {});
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
+  const { fields, raw } = body;
 
   try {
     if (raw !== undefined && template.config && template.config.file) {
