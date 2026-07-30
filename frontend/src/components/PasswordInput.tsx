@@ -1,9 +1,15 @@
-import { useState } from 'react';
+import { useState, ChangeEventHandler } from 'react';
+
+interface PasswordInputProps {
+  value: string;
+  onChange: ChangeEventHandler<HTMLInputElement>;
+  autoComplete?: string;
+}
 
 // Security checklist: every field rendered through this component is masked by default
 // (type="password"), never logged, and only ever toggled to plain text by an explicit
 // user click -- the toggle state is local component state, never persisted or sent anywhere.
-export default function PasswordInput({ value, onChange, autoComplete = 'off' }) {
+export default function PasswordInput({ value, onChange, autoComplete = 'off' }: PasswordInputProps) {
   const [show, setShow] = useState(false);
 
   return (

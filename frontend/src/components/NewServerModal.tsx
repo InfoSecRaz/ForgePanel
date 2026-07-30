@@ -3,10 +3,11 @@ import { api } from '../lib/api';
 import { getFieldHelp } from '../lib/fieldHelp';
 import PasswordInput from './PasswordInput';
 import FieldBadges from './FieldBadges';
+import type { Template, Server, HostStats, TemplateField } from '../types';
 
 const ACCENT_PRESETS = ['#f59e0b', '#ea580c', '#3b82f6', '#10b981', '#8b5cf6', '#f43f5e', '#06b6d4', '#6b7280'];
 
-const CATEGORY_ICONS = {
+const CATEGORY_ICONS: Record<string, string> = {
   survival: '🗡️',
   shooter: '🎯',
   sandbox: '🧱',
@@ -15,16 +16,24 @@ const CATEGORY_ICONS = {
   other: '⚙️'
 };
 
-export function defaultIconForCategory(category) {
-  return CATEGORY_ICONS[category] || CATEGORY_ICONS.other;
+export function defaultIconForCategory(category?: string): string {
+  return (category && CATEGORY_ICONS[category]) || CATEGORY_ICONS.other;
 }
 
-function primaryPort(template) {
+function primaryPort(template: Template): number | string {
   const entry = (template.ports || []).find((p) => p.primary) || (template.ports || [])[0];
   return entry ? entry.port : '';
 }
 
-export default function NewServerModal({ template, onClose, onCreated }) {
+type FieldValue = string | number | boolean;
+
+interface NewServerModalProps {
+  template: Template;
+  onClose: () => void;
+  onCreated: (server: Server) => void;
+}
+
+export default function NewServerModal({ template, onClose, onCreated }: NewServerModalProps) {
   const [name, setName] = useState('');
   const [ramLimitMb, setRamLimitMb] = useState(template.defaultRamMb || 2048);
   const [cpuLimitPercent, setCpuLimitPercent] = useState(100);
@@ -35,13 +44,13 @@ export default function NewServerModal({ template, onClose, onCreated }) {
   const [customIcon, setCustomIcon] = useState('');
   const [customTagline, setCustomTagline] = useState('');
   const [showCustomize, setShowCustomize] = useState(false);
-  const [fieldValues, setFieldValues] = useState(() => {
-    const initial = {};
+  const [fieldValues, setFieldValues] = useState<Record<string, FieldValue | undefined>>(() => {
+    const initial: Record<string, FieldValue | undefined> = {};
     (template.fields || []).forEach((f) => (initial[f.envVar] = f.default));
     return initial;
   });
-  const [installOptionValues, setInstallOptionValues] = useState(() => {
-    const initial = {};
+  const [installOptionValues, setInstallOptionValues] = useState<Record<string, string | undefined>>(() => {
+    const initial: Record<string, string | undefined> = {};
     (template.installOptions || []).forEach((o) => (initial[o.key] = o.default));
     return initial;
   });
@@ -49,14 +58,14 @@ export default function NewServerModal({ template, onClose, onCreated }) {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    api.get('/settings/host').then((host) => setTotalRamMb(host.totalRamMb || 8192)).catch(() => {});
+    api.get<HostStats>('/settings/host').then((host) => setTotalRamMb(host.totalRamMb || 8192)).catch(() => {});
   }, []);
 
   async function handleCreate() {
     setCreating(true);
     setError('');
     try {
-      const server = await api.post('/servers', {
+      const server = await api.post<Server>('/servers', {
         name,
         gameId: template.id,
         ramLimitMb: Number(ramLimitMb),
@@ -71,7 +80,7 @@ export default function NewServerModal({ template, onClose, onCreated }) {
       });
       onCreated(server);
     } catch (err) {
-      setError(err.message);
+      setError((err as Error).message);
       setCreating(false);
     }
   }
@@ -100,7 +109,7 @@ export default function NewServerModal({ template, onClose, onCreated }) {
           */}
           {(template.installOptions || []).length > 0 && (
             <div className="space-y-4">
-              {template.installOptions.map((opt) => (
+              {template.installOptions!.map((opt) => (
                 <div key={opt.key}>
                   <label className="field-label">{opt.label}</label>
                   {opt.type === 'select' ? (
@@ -247,7 +256,7 @@ export default function NewServerModal({ template, onClose, onCreated }) {
           </div>
 
           <div className="border-t border-hairline pt-4 space-y-4">
-            {(template.fields || []).map((field) => (
+            {(template.fields || []).map((field: TemplateField) => (
               <div key={field.envVar}>
                 <label className="field-label">
                   {field.label}
@@ -265,7 +274,7 @@ export default function NewServerModal({ template, onClose, onCreated }) {
                 ) : field.type === 'select' ? (
                   <select
                     className="input"
-                    value={fieldValues[field.envVar] ?? ''}
+                    value={(fieldValues[field.envVar] as string) ?? ''}
                     onChange={(e) => setFieldValues((v) => ({ ...v, [field.envVar]: e.target.value }))}
                   >
                     {(field.options || []).map((opt) => (
@@ -274,14 +283,14 @@ export default function NewServerModal({ template, onClose, onCreated }) {
                   </select>
                 ) : field.type === 'password' ? (
                   <PasswordInput
-                    value={fieldValues[field.envVar] ?? ''}
+                    value={(fieldValues[field.envVar] as string) ?? ''}
                     onChange={(e) => setFieldValues((v) => ({ ...v, [field.envVar]: e.target.value }))}
                   />
                 ) : (
                   <input
                     type={field.type === 'number' ? 'number' : 'text'}
                     className="input"
-                    value={fieldValues[field.envVar] ?? ''}
+                    value={(fieldValues[field.envVar] as string) ?? ''}
                     onChange={(e) => setFieldValues((v) => ({ ...v, [field.envVar]: e.target.value }))}
                   />
                 )}

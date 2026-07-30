@@ -1,4 +1,4 @@
-async function request(method, path, body) {
+async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const res = await fetch(`/api${path}`, {
     method,
     credentials: 'include',
@@ -6,25 +6,29 @@ async function request(method, path, body) {
     body: body ? JSON.stringify(body) : undefined
   });
 
-  if (res.status === 204) return null;
+  if (res.status === 204) return null as T;
 
   const contentType = res.headers.get('content-type') || '';
   const data = contentType.includes('application/json') ? await res.json() : await res.text();
 
   if (!res.ok) {
-    throw new Error((data && data.error) || `Request failed: ${res.status}`);
+    throw new Error((data && (data as { error?: string }).error) || `Request failed: ${res.status}`);
   }
-  return data;
+  return data as T;
 }
 
 export const api = {
-  get: (path) => request('GET', path),
-  post: (path, body) => request('POST', path, body || {}),
-  put: (path, body) => request('PUT', path, body || {}),
-  del: (path) => request('DELETE', path)
+  get: <T>(path: string) => request<T>('GET', path),
+  post: <T>(path: string, body?: unknown) => request<T>('POST', path, body ?? {}),
+  put: <T>(path: string, body?: unknown) => request<T>('PUT', path, body ?? {}),
+  del: <T>(path: string) => request<T>('DELETE', path)
 };
 
-export async function uploadFile(path, file, onProgress) {
+export async function uploadFile(
+  path: string,
+  file: File,
+  onProgress?: (pct: number) => void
+): Promise<unknown> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `/api${path}`);
@@ -36,7 +40,7 @@ export async function uploadFile(path, file, onProgress) {
       try {
         const data = JSON.parse(xhr.responseText);
         if (xhr.status >= 200 && xhr.status < 300) resolve(data);
-        else reject(new Error(data.error || 'Upload failed'));
+        else reject(new Error((data as { error?: string }).error || 'Upload failed'));
       } catch (err) {
         reject(err);
       }

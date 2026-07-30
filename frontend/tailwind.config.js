@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ['./index.html', './src/**/*.{js,jsx}'],
+  content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}'],
   theme: {
     extend: {
       colors: {
@@ -36,7 +36,9 @@ export default {
         tab: 'var(--radius-tab)'
       },
       fontFamily: {
-        sans: ['Inter Variable', 'Inter', 'sans-serif'],
+        // --ui-font-family is set at runtime by ThemeContext (inter/system/mono choice);
+        // the literal names after it are just the pre-hydration/no-JS fallback.
+        sans: ['var(--ui-font-family)', 'Inter Variable', 'Inter', 'sans-serif'],
         mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace']
       },
       fontSize: {

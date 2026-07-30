@@ -1,4 +1,6 @@
-export default function FieldBadges({ field }) {
+import type { TemplateField } from '../types';
+
+export default function FieldBadges({ field }: { field: TemplateField }) {
   if (!field.readonly && !field.requiresRestart) return null;
 
   return (

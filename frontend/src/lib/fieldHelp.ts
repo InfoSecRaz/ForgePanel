@@ -1,4 +1,6 @@
-const ZOMBOID_HELP = {
+import type { TemplateField } from '../types';
+
+const ZOMBOID_HELP: Record<string, string> = {
   MaxPlayers: 'Maximum simultaneous players. Higher values need more RAM.',
   PVP: 'Allow players to damage each other.',
   PauseEmpty: 'Pause the simulation when no players are online. Recommended for small groups.',
@@ -12,13 +14,13 @@ const ZOMBOID_HELP = {
   SteamVAC: 'Valve Anti-Cheat. Recommended for public servers.'
 };
 
-const HELP_BY_TEMPLATE = {
+const HELP_BY_TEMPLATE: Record<string, Record<string, string>> = {
   zomboid: ZOMBOID_HELP
 };
 
-export function getFieldHelp(templateId, field) {
+export function getFieldHelp(templateId: string, field: TemplateField): string | null {
   const templateHelp = HELP_BY_TEMPLATE[templateId];
-  const key = field.iniKey || field.propKey || field.jsonKey || field.xmlTag || field.yamlKey || field.envVar;
-  if (templateHelp && templateHelp[key]) return templateHelp[key];
-  return field.description || null;
+  const key = field.iniKey ?? field.propKey ?? field.jsonKey ?? field.xmlTag ?? field.yamlKey ?? field.envVar;
+  if (templateHelp?.[key]) return templateHelp[key];
+  return field.description ?? null;
 }
