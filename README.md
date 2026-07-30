@@ -34,7 +34,7 @@ Workshop search requires a free key from [steamcommunity.com/dev/apikey](https:/
 
 ### playit.gg
 
-For servers without a static public IP, enable a tunnel per-server from the server's Tunnel tab after completing the one-time claim flow in Settings → playit.gg.
+For servers without a static public IP, enable a tunnel per-server from the server's Tunnel tab after completing the one-time claim flow in Settings > playit.gg.
 
 ## Update
 
