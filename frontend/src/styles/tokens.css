@@ -14,10 +14,13 @@
   --text-secondary: #8a8f98;
   --text-muted: #62666d;
 
-  /* Accent */
-  --accent: #5e6ad2;
-  --accent-hover: #6b7ae8;
-  --focus-ring: rgba(94, 106, 210, 0.5);
+  /* Accent -- overridden at runtime by ThemeContext from GET /api/settings/theme; these are
+     just the pre-hydration fallback (Forge amber, the theming system's own default). */
+  --accent: #f59e0b;
+  --accent-hover: #d97706;
+  --accent-muted: rgba(245, 158, 11, 0.15);
+  --focus-ring: rgba(245, 158, 11, 0.4);
+  --ui-font-family: 'Inter Variable', 'Inter', sans-serif;
 
   /* Status */
   --status-running: #27a644;
