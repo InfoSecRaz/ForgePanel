@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useAuth } from '../lib/AuthContext';
+import { useTheme } from '../lib/ThemeContext';
 import { useServerStore } from '../stores/serverStore';
 import { getSocket } from '../lib/socket';
 import { api } from '../lib/api';
@@ -16,6 +17,7 @@ const NAV = [
 
 export default function Layout({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const { servers, setServers, updateState, updateStats } = useServerStore();
 
@@ -39,6 +41,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 
   const running = servers.filter((s) => s.state === 'running');
   const totalPlayers = running.reduce((n, s) => n + (s._players ?? 0), 0);
+  const iconIsImage = theme.panelIcon && theme.panelIcon.startsWith('data:');
 
   async function handleLogout() {
     await logout();
@@ -50,11 +53,17 @@ export default function Layout({ children }: { children: ReactNode }) {
       {/* Sidebar */}
       <aside className="w-[220px] flex-shrink-0 flex flex-col" style={{ background: '#0a0b0c', borderRight: '0.5px solid var(--border-hairline)' }}>
         {/* Logo */}
-        <div className="px-5 py-5 flex items-center gap-2.5">
-          <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg, #f59e0b, #d97706)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>
-            ⚒
+        <div className="px-5 py-5 flex items-center gap-2.5 min-w-0">
+          <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg, #f59e0b, #d97706)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0, overflow: 'hidden' }}>
+            {iconIsImage ? (
+              <img src={theme.panelIcon} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              theme.panelIcon
+            )}
           </div>
-          <span className="text-[14px] text-text-primary" style={{ fontWeight: 700, letterSpacing: '-0.01em' }}>ForgePanel</span>
+          <span className="text-[14px] text-text-primary truncate" style={{ fontWeight: 700, letterSpacing: '-0.01em' }} title={theme.panelName}>
+            {theme.panelName}
+          </span>
         </div>
 
         {/* Fleet pill */}
@@ -111,6 +120,16 @@ export default function Layout({ children }: { children: ReactNode }) {
             </div>
             <button onClick={handleLogout} className="btn-ghost text-[11px] text-text-muted hover:text-text-primary">→</button>
           </div>
+          {theme.attribution && (
+            <a
+              href="https://github.com/InfoSecRaz/ForgePanel"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1 mt-3 text-[11px] text-text-muted hover:text-text-secondary transition-colors duration-100"
+            >
+              <span>🔨</span> Built with ForgePanel
+            </a>
+          )}
         </div>
       </aside>
 
